@@ -3,10 +3,12 @@ import { Card, CardHeader, CardTitle, Badge, HealthScore } from "@/components/ui
 import { HealthBreakdown } from "@/components/coach/health-breakdown";
 import { createClient } from "@/lib/supabase/server";
 import { getStudentHome } from "@/lib/queries";
+import { computeAndStoreHealthScore } from "@/lib/health-score";
 
 export default async function EleveAccueilPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  await computeAndStoreHealthScore(supabase, user!.id);
   const h = await getStudentHome(supabase, user!.id);
   const firstName = h.name.split(" ")[0];
   const today = new Date().toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short" }).toUpperCase();

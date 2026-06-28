@@ -6,6 +6,7 @@ import { EvolutionChart } from "@/components/coach/evolution-chart";
 import { CopyLink } from "@/components/coach/copy-link";
 import { createClient } from "@/lib/supabase/server";
 import { getStudentDetail } from "@/lib/queries";
+import { computeAndStoreHealthScore } from "@/lib/health-score";
 import { createProgram } from "@/app/(coach)/programmes/actions";
 import { baseUrl } from "@/lib/url";
 
@@ -13,6 +14,7 @@ function tone(score: number) { return score >= 70 ? "text-ok" : score >= 50 ? "t
 
 export default async function FicheElevePage({ params }: { params: { id: string } }) {
   const supabase = createClient();
+  await computeAndStoreHealthScore(supabase, params.id);
   const s = await getStudentDetail(supabase, params.id);
   if (!s) notFound();
 
