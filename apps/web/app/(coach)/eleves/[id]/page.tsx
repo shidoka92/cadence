@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { Button, Card, CardHeader, CardTitle, Badge, Avatar } from "@/components/ui";
 import { HealthBreakdown } from "@/components/coach/health-breakdown";
 import { EvolutionChart } from "@/components/coach/evolution-chart";
+import { CopyLink } from "@/components/coach/copy-link";
 import { createClient } from "@/lib/supabase/server";
 import { getStudentDetail } from "@/lib/queries";
 import { createProgram } from "@/app/(coach)/programmes/actions";
+import { baseUrl } from "@/lib/url";
 
 function tone(score: number) { return score >= 70 ? "text-ok" : score >= 50 ? "text-warn" : "text-risk"; }
 
@@ -13,6 +15,14 @@ export default async function FicheElevePage({ params }: { params: { id: string 
   const supabase = createClient();
   const s = await getStudentDetail(supabase, params.id);
   if (!s) notFound();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: coach } = await supabase
+    .from("profiles")
+    .select("stripe_charges_enabled, subscription_price")
+    .eq("id", user!.id)
+    .single();
+  const paymentReady = Boolean(coach?.stripe_charges_enabled && coach?.subscription_price);
 
   return (
     <div className="flex flex-col h-screen">
@@ -96,6 +106,22 @@ export default async function FicheElevePage({ params }: { params: { id: string 
             </div>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader><CardTitle>Paiement</CardTitle>{s.subOk && <Badge variant="done" className="ml-auto">Abonné</Badge>}</CardHeader>
+          <div className="p-4">
+            {s.subOk ? (
+              <p className="text-sm text-muted">{s.name} est déjà abonné(e).</p>
+            ) : paymentReady ? (
+              <>
+                <p className="text-sm text-muted mb-2">Envoie ce lien à {s.name} pour qu&apos;il/elle s&apos;abonne :</p>
+                <CopyLink url={`${baseUrl()}/payer/${params.id}`} />
+              </>
+            ) : (
+              <p className="text-sm text-muted">Configure ton tarif et connecte Stripe dans <Link href="/parametres" className="text-acid">Paramètres</Link> pour générer un lien de paiement.</p>
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );

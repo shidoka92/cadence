@@ -1,9 +1,9 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
+import { baseUrl } from "@/lib/url";
 
 export async function updateProfile(formData: FormData) {
   const fullName = String(formData.get("full_name")).trim();
@@ -14,10 +14,13 @@ export async function updateProfile(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
-function baseUrl() {
-  const h = headers();
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${h.get("host")}`;
+export async function updateSubscriptionPrice(formData: FormData) {
+  const price = parseFloat(String(formData.get("subscription_price")).replace(",", "."));
+  if (!price || price <= 0) return;
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  await supabase.from("profiles").update({ subscription_price: price }).eq("id", user!.id);
+  revalidatePath("/parametres");
 }
 
 /** Crée (si besoin) le compte Connect du coach et l'envoie sur l'onboarding hébergé Stripe.

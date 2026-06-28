@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
-import { updateProfile, connectStripe, syncStripeStatus } from "./actions";
+import { updateProfile, connectStripe, syncStripeStatus, updateSubscriptionPrice } from "./actions";
 
 export default async function ParametresPage({ searchParams }: { searchParams: { stripe?: string } }) {
   if (searchParams.stripe === "return" || searchParams.stripe === "refresh") {
@@ -13,7 +13,7 @@ export default async function ParametresPage({ searchParams }: { searchParams: {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, stripe_account_id, stripe_charges_enabled, stripe_details_submitted")
+    .select("full_name, stripe_account_id, stripe_charges_enabled, stripe_details_submitted, subscription_price")
     .eq("id", user!.id)
     .single();
 
@@ -62,6 +62,20 @@ export default async function ParametresPage({ searchParams }: { searchParams: {
               </form>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Abonnement élèves</CardTitle></CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted mb-3">Tarif mensuel facturé à chaque élève qui s&apos;abonne (Cadence prélève 10% de commission).</p>
+          <form action={updateSubscriptionPrice} className="flex items-end gap-2.5">
+            <div className="flex-1">
+              <label className="font-mono text-[10px] uppercase tracking-widest text-ghost">Prix / mois (€)</label>
+              <Input name="subscription_price" type="number" min="1" step="0.5" defaultValue={profile?.subscription_price ?? ""} className="mt-1" />
+            </div>
+            <Button type="submit">Enregistrer</Button>
+          </form>
         </CardContent>
       </Card>
 
