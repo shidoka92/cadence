@@ -2,14 +2,44 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getStripe, PLATFORM_FEE_PERCENT } from "@/lib/stripe";
+import { baseUrl } from "@/lib/url";
 
 export async function enrollClass(formData: FormData) {
   const classId = String(formData.get("classId"));
   if (!classId) return;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  await supabase.from("class_enrollments").insert({ class_id: classId, student_id: user!.id });
-  revalidatePath("/eleve/planning");
+
+  const { data: klass } = await supabase.from("classes").select("coach_id, title, pricing, price").eq("id", classId).single();
+  if (!klass) return;
+
+  if (klass.pricing !== "paid" || !klass.price) {
+    await supabase.from("class_enrollments").insert({ class_id: classId, student_id: user!.id });
+    revalidatePath("/eleve/planning");
+    return;
+  }
+
+  // cours payant : paiement Stripe unique, commission Cadence comme pour les abonnements
+  const { data: coach } = await supabase.from("profiles").select("stripe_account_id, stripe_charges_enabled").eq("id", klass.coach_id).single();
+  if (!coach?.stripe_account_id || !coach.stripe_charges_enabled) return;
+
+  const stripe = getStripe();
+  if (!stripe) return;
+
+  const amountCents = Math.round(klass.price * 100);
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    line_items: [{ price_data: { currency: "eur", unit_amount: amountCents, product_data: { name: klass.title } }, quantity: 1 }],
+    payment_intent_data: {
+      application_fee_amount: Math.round((amountCents * PLATFORM_FEE_PERCENT) / 100),
+      transfer_data: { destination: coach.stripe_account_id },
+    },
+    metadata: { classId, studentId: user!.id, coachId: klass.coach_id },
+    success_url: `${baseUrl()}/eleve/planning`,
+    cancel_url: `${baseUrl()}/eleve/planning`,
+  });
+  redirect(session.url!);
 }
 
 export async function requestOpenSession(formData: FormData) {

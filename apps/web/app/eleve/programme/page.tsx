@@ -1,7 +1,8 @@
-import { Card, CardHeader, CardTitle, Button, Input } from "@/components/ui";
+import { Card, CardHeader, CardTitle, Badge, Button, Input } from "@/components/ui";
 import { ProgramViewer } from "@/components/student/program-viewer";
 import { createClient } from "@/lib/supabase/server";
 import { getStudentProgram } from "@/lib/queries";
+import { flattenPlanRefs, encodeRef } from "@/lib/plan";
 import { addAnnotation } from "./actions";
 
 export default async function EleveProgrammePage() {
@@ -29,15 +30,26 @@ export default async function EleveProgrammePage() {
                 {program.annotations.map((a) => (
                   <div key={a.id} className="flex items-start gap-3 px-4 py-3 border-b border-line last:border-0">
                     <span className="font-display text-xs font-semibold uppercase tracking-wide text-acid shrink-0">{a.author === "coach" ? "Coach" : "Toi"}</span>
-                    <span className="text-sm flex-1">{a.body}</span>
+                    <div className="flex-1">
+                      {a.anchorLabel && <Badge variant="default" className="mb-1">{a.anchorLabel}</Badge>}
+                      <p className="text-sm">{a.body}</p>
+                    </div>
                     <span className="font-mono text-[10px] text-ghost whitespace-nowrap">{a.time}</span>
                   </div>
                 ))}
               </div>
-              <form action={addAnnotation} className="flex items-center gap-2.5 px-4 py-3 border-t border-line">
+              <form action={addAnnotation} className="flex flex-col gap-2.5 px-4 py-3 border-t border-line">
                 <input type="hidden" name="programId" value={program.id} />
-                <Input name="body" placeholder="Écrire un commentaire sur ton programme…" autoComplete="off" className="flex-1" />
-                <Button type="submit">Envoyer</Button>
+                <select name="anchor" defaultValue="" className="bg-surf2 border border-line2 rounded-md px-3 py-2 text-xs text-muted outline-none focus:border-acid/60">
+                  <option value="">Commentaire général sur le programme</option>
+                  {flattenPlanRefs(program.plan).map((ref) => (
+                    <option key={encodeRef(ref)} value={encodeRef(ref)}>{ref.label}</option>
+                  ))}
+                </select>
+                <div className="flex items-center gap-2.5">
+                  <Input name="body" placeholder="Écrire un commentaire…" autoComplete="off" className="flex-1" />
+                  <Button type="submit">Envoyer</Button>
+                </div>
               </form>
             </Card>
           </>

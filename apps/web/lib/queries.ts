@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Plan } from "@cadence/types";
 import type { PlanningEventData } from "@/components/coach/planning-event";
+import { resolveAnchorLabel } from "@/lib/plan";
 
 /* ---------- helpers ---------- */
 const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
@@ -161,57 +162,6 @@ function planEvolution(plan: Plan | undefined) {
 
 /* ---------- Planning (semaine glissante) ---------- */
 
-const DAYS_SHORT = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-function sameDay(a: Date, b: Date) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
-function countBy<T>(rows: T[], key: keyof T) {
-  const m: Record<string, number> = {};
-  for (const r of rows) { const k = String(r[key]); m[k] = (m[k] ?? 0) + 1; }
-  return m;
-}
-
-export async function getPlanningWeek(supabase: SupabaseClient, coachId: string) {
-  const [classRes, openRes] = await Promise.all([
-    supabase.from("classes").select("id, title, starts_at, capacity, level, pricing, price").eq("coach_id", coachId),
-    supabase.from("open_sessions").select("id, title, starts_at, host_name, slots, is_open").eq("coach_id", coachId),
-  ]);
-  const classes = classRes.data ?? [];
-  const opens = openRes.data ?? [];
-
-  const classIds = classes.map((c: any) => c.id);
-  const { data: enrolls = [] } = classIds.length
-    ? await supabase.from("class_enrollments").select("class_id").in("class_id", classIds)
-    : { data: [] as any[] };
-  const enrolledOf = countBy(enrolls as any[], "class_id" as any);
-
-  const openIds = opens.map((o: any) => o.id);
-  const { data: reqs = [] } = openIds.length
-    ? await supabase.from("open_session_requests").select("session_id, status").in("session_id", openIds)
-    : { data: [] as any[] };
-  const acceptedOf: Record<string, number> = {};
-  for (const r of reqs as any[]) if (r.status === "accepted") acceptedOf[r.session_id] = (acceptedOf[r.session_id] ?? 0) + 1;
-
-  const start = new Date(); start.setHours(0, 0, 0, 0);
-  const days = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(start.getTime() + i * 864e5);
-    const events: PlanningEventData[] = [];
-    for (const c of classes as any[]) {
-      if (sameDay(new Date(c.starts_at), d))
-        events.push({ type: "cours", title: c.title, time: hhmm(c.starts_at), capacity: `${enrolledOf[c.id] ?? 0}/${c.capacity}`, level: c.level ?? "", pricing: c.pricing, price: c.price != null ? `${c.price}€` : undefined });
-    }
-    for (const o of opens as any[]) {
-      if (!o.is_open) continue;
-      if (sameDay(new Date(o.starts_at), d))
-        events.push({ type: "open", title: o.title, time: hhmm(o.starts_at), host: o.host_name, slots: `${acceptedOf[o.id] ?? 0}/${o.slots}` });
-    }
-    events.sort((a, b) => (a.time ?? "").localeCompare(b.time ?? ""));
-    days.push({ day: DAYS_SHORT[d.getDay()], date: String(d.getDate()), events });
-  }
-  const end = new Date(start.getTime() + 6 * 864e5);
-  const fmt = (x: Date) => x.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
-  return { label: `${fmt(start)} — ${fmt(end)}`, days };
-}
-
 /* ---------- Planning (fenêtre glissante 7 jours) ---------- */
 
 export async function getPlanning(supabase: SupabaseClient, coachId: string, weekOffset = 0) {
@@ -355,21 +305,27 @@ export async function getStudentProgram(supabase: SupabaseClient, studentId: str
     .maybeSingle();
   if (!prog) return null;
 
-  const { data: annots = [] } = await supabase
-    .from("program_annotations")
-    .select("id, author, body, status, created_at")
-    .eq("program_id", prog.id)
-    .order("created_at", { ascending: true });
-
+  const plan = prog.plan as Plan;
   return {
     id: prog.id as string,
     title: prog.title as string,
     status: prog.status as string,
-    plan: prog.plan as Plan,
-    annotations: (annots ?? []).map((a: any) => ({
-      id: a.id as string, author: a.author as "coach" | "student", body: a.body as string, time: rel(a.created_at),
-    })),
+    plan,
+    annotations: await getProgramAnnotations(supabase, prog.id, plan),
   };
+}
+
+/** Commentaires d'un programme, avec le libellé de la séance/exercice ciblé résolu depuis le Plan. */
+export async function getProgramAnnotations(supabase: SupabaseClient, programId: string, plan: Plan) {
+  const { data: annots = [] } = await supabase
+    .from("program_annotations")
+    .select("id, author, body, anchor, created_at")
+    .eq("program_id", programId)
+    .order("created_at", { ascending: true });
+  return (annots ?? []).map((a: any) => ({
+    id: a.id as string, author: a.author as "coach" | "student", body: a.body as string, time: rel(a.created_at),
+    anchorLabel: resolveAnchorLabel(plan, a.anchor),
+  }));
 }
 
 export async function getStudentJournal(supabase: SupabaseClient, studentId: string) {

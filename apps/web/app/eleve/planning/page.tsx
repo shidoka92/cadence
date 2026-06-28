@@ -70,7 +70,9 @@ export default async function ElevePlanningPage({ searchParams }: { searchParams
                           ) : (
                             <form action={enrollClass} className="mt-1.5">
                               <input type="hidden" name="classId" value={e.id} />
-                              <button type="submit" className="font-display text-[10px] font-semibold uppercase tracking-wide text-acid">S&apos;inscrire</button>
+                              <button type="submit" className="font-display text-[10px] font-semibold uppercase tracking-wide text-acid">
+                                {e.pricing === "paid" ? `Payer ${e.price}` : "S'inscrire"}
+                              </button>
                             </form>
                           )
                         )}

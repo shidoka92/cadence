@@ -43,6 +43,19 @@ export async function POST(req: NextRequest) {
       const coachId = session.metadata?.coachId;
       if (session.mode === "subscription" && session.subscription && studentId && coachId) {
         await upsertSubscription(studentId, coachId, String(session.subscription), "active");
+      } else if (session.mode === "payment" && session.metadata?.classId && studentId && coachId) {
+        const classId = session.metadata.classId;
+        const admin = createAdminClient();
+        const amount = (session.amount_total ?? 0) / 100;
+        const applicationFee = Math.round(amount * PLATFORM_FEE_PERCENT) / 100;
+        const { data: payment } = await admin
+          .from("payments")
+          .upsert({ type: "class", student_id: studentId, coach_id: coachId, stripe_id: session.id, amount, application_fee: applicationFee }, { onConflict: "stripe_id" })
+          .select("id")
+          .single();
+        await admin
+          .from("class_enrollments")
+          .upsert({ class_id: classId, student_id: studentId, payment_id: payment?.id ?? null }, { onConflict: "class_id,student_id" });
       }
       break;
     }

@@ -2,9 +2,12 @@
 import { useState } from "react";
 import { ChevronRight, AlertTriangle, Plus, X, Minus } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { Button, Badge } from "@/components/ui";
+import { Button, Badge, Card, CardHeader, CardTitle, Input } from "@/components/ui";
 import type { Plan } from "@cadence/types";
-import { savePlan } from "./actions";
+import { flattenPlanRefs, encodeRef } from "@/lib/plan";
+import { savePlan, addCoachAnnotation } from "./actions";
+
+type Annotation = { id: string; author: "coach" | "student"; body: string; time: string; anchorLabel: string | null };
 
 const COLORS = ["acid", "violet", "warn"] as const;
 const tint: Record<string, string> = {
@@ -17,8 +20,8 @@ const inlineInput = "bg-transparent border border-transparent hover:border-line2
 
 function renumber(plan: Plan) { let w = 1; for (const b of plan.blocks) b.weeks = b.weeks.map(() => w++); }
 
-export function ProgramEditor({ programId, title: initialTitle, student, initialPlan }: {
-  programId: string; title: string; student: string; initialPlan: Plan;
+export function ProgramEditor({ programId, title: initialTitle, student, initialPlan, annotations }: {
+  programId: string; title: string; student: string; initialPlan: Plan; annotations: Annotation[];
 }) {
   const [plan, setPlan] = useState<Plan>(initialPlan);
   const [title, setTitle] = useState(initialTitle);
@@ -175,6 +178,36 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
             <button onClick={addExercise} className="mt-2 w-full rounded-md border border-dashed border-line2 text-ghost hover:text-muted py-2.5 flex items-center justify-center gap-1.5 text-xs font-display uppercase tracking-wide"><Plus size={14} /> Exercice</button>
           </div>
         )}
+
+        <Card className="max-w-2xl mt-6">
+          <CardHeader><CardTitle>Commentaires</CardTitle></CardHeader>
+          <div>
+            {annotations.length === 0 && <div className="px-4 py-5 text-sm text-muted">Aucun commentaire pour l&apos;instant.</div>}
+            {annotations.map((a) => (
+              <div key={a.id} className="flex items-start gap-3 px-4 py-3 border-b border-line last:border-0">
+                <span className="font-display text-xs font-semibold uppercase tracking-wide text-acid shrink-0">{a.author === "coach" ? "Toi" : student}</span>
+                <div className="flex-1">
+                  {a.anchorLabel && <Badge variant="default" className="mb-1">{a.anchorLabel}</Badge>}
+                  <p className="text-sm">{a.body}</p>
+                </div>
+                <span className="font-mono text-[10px] text-ghost whitespace-nowrap">{a.time}</span>
+              </div>
+            ))}
+          </div>
+          <form action={addCoachAnnotation} className="flex flex-col gap-2.5 px-4 py-3 border-t border-line">
+            <input type="hidden" name="programId" value={programId} />
+            <select name="anchor" defaultValue="" className="bg-surf2 border border-line2 rounded-md px-3 py-2 text-xs text-muted outline-none focus:border-acid/60">
+              <option value="">Commentaire général sur le programme</option>
+              {flattenPlanRefs(plan).map((ref) => (
+                <option key={encodeRef(ref)} value={encodeRef(ref)}>{ref.label}</option>
+              ))}
+            </select>
+            <div className="flex items-center gap-2.5">
+              <Input name="body" placeholder={`Répondre à ${student}…`} autoComplete="off" className="flex-1" />
+              <Button type="submit">Envoyer</Button>
+            </div>
+          </form>
+        </Card>
       </div>
     </div>
   );

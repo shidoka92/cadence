@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Plan } from "@cadence/types";
+import { decodeAnchor } from "@/lib/plan";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -23,4 +24,14 @@ export async function createProgram(formData: FormData) {
   if (error || !data) return;
   revalidatePath("/programmes");
   redirect(`/programmes/${data.id}`);
+}
+
+export async function addCoachAnnotation(formData: FormData) {
+  const programId = String(formData.get("programId"));
+  const body = String(formData.get("body")).trim();
+  if (!body || !programId) return;
+  const anchor = decodeAnchor(String(formData.get("anchor") ?? ""));
+  const supabase = createClient();
+  await supabase.from("program_annotations").insert({ program_id: programId, author: "coach", body, status: "sent", anchor });
+  revalidatePath(`/programmes/${programId}`);
 }
