@@ -15,10 +15,11 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setLoading(false); setError(error.message); return; }
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
     setLoading(false);
-    if (error) setError(error.message);
-    else router.replace("/dashboard");
+    router.replace(profile?.role === "student" ? "/eleve/accueil" : "/dashboard");
   }
 
   return (
@@ -29,8 +30,7 @@ export default function LoginPage() {
           <span className="font-display font-bold text-2xl uppercase tracking-wider">Cadence</span>
         </div>
         <div className="bg-surf border border-line rounded-lg p-6">
-          <h1 className="font-display text-xl font-semibold uppercase tracking-wide mb-1">Connexion</h1>
-          <p className="text-xs text-muted mb-6">Espace coach.</p>
+          <h1 className="font-display text-xl font-semibold uppercase tracking-wide mb-5">Connexion</h1>
           <div className="space-y-3">
             <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <Input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -40,9 +40,6 @@ export default function LoginPage() {
             </Button>
           </div>
         </div>
-        <p className="text-center text-[11px] text-ghost mt-5 font-mono uppercase tracking-wider">
-          Élève ? Connecte-toi depuis l&apos;app mobile
-        </p>
       </div>
     </main>
   );

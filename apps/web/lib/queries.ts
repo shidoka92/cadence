@@ -217,7 +217,7 @@ export async function getPlanningWeek(supabase: SupabaseClient, coachId: string)
 export async function getPlanning(supabase: SupabaseClient, coachId: string, weekOffset = 0) {
   const [classRes, openRes] = await Promise.all([
     supabase.from("classes").select("id, title, capacity, level, pricing, price, starts_at").eq("coach_id", coachId),
-    supabase.from("open_sessions").select("title, host_name, slots, is_open, starts_at").eq("coach_id", coachId),
+    supabase.from("open_sessions").select("id, title, host_name, slots, is_open, starts_at").eq("coach_id", coachId),
   ]);
   const classes = classRes.data ?? [];
   const opens = (openRes.data ?? []).filter((o: any) => o.is_open);
@@ -239,11 +239,11 @@ export async function getPlanning(supabase: SupabaseClient, coachId: string, wee
     const events: PlanningEventData[] = [];
     for (const c of classes) {
       const t = new Date(c.starts_at).getTime();
-      if (t >= a && t < b) events.push({ type: "cours", title: c.title, time: hhmm(c.starts_at), capacity: `${enrolled[c.id] ?? 0}/${c.capacity}`, level: c.level ?? "", pricing: c.pricing, price: c.price ? `${c.price}€` : undefined });
+      if (t >= a && t < b) events.push({ id: c.id, type: "cours", title: c.title, time: hhmm(c.starts_at), capacity: `${enrolled[c.id] ?? 0}/${c.capacity}`, level: c.level ?? "", pricing: c.pricing, price: c.price ? `${c.price}€` : undefined });
     }
     for (const o of opens) {
       const t = new Date(o.starts_at).getTime();
-      if (t >= a && t < b) events.push({ type: "open", title: o.title, time: hhmm(o.starts_at), host: o.host_name, slots: `${o.slots} pl.` });
+      if (t >= a && t < b) events.push({ id: o.id, type: "open", title: o.title, time: hhmm(o.starts_at), host: o.host_name, slots: `${o.slots} pl.` });
     }
     events.sort((x, y) => x.time.localeCompare(y.time));
     days.push({ day: dayAbbr(d.toISOString()), date: String(d.getDate()), isoDate: d.toISOString().slice(0, 10), events });
@@ -313,4 +313,81 @@ export async function getThread(supabase: SupabaseClient, coachId: string, stude
   const { data: student } = await supabase.from("profiles").select("full_name").eq("id", studentId).single();
   const { data: messages = [] } = await supabase.from("messages").select("sender, body, created_at").eq("coach_id", coachId).eq("student_id", studentId).order("created_at", { ascending: true });
   return { name: student?.full_name ?? "Élève", messages: messages! };
+}
+
+/* ---------- Espace élève ---------- */
+
+export async function getStudentHome(supabase: SupabaseClient, studentId: string) {
+  const { data: profile } = await supabase.from("profiles").select("full_name, coach_id").eq("id", studentId).single();
+  const coachId = profile?.coach_id ?? null;
+
+  const [hsRes, progRes, lastMsgRes, classRes, openRes] = await Promise.all([
+    supabase.from("health_scores").select("score, factors").eq("student_id", studentId).maybeSingle(),
+    supabase.from("programs").select("id, title, status").eq("student_id", studentId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("messages").select("body, sender, created_at").eq("student_id", studentId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    coachId ? supabase.from("classes").select("title, starts_at, capacity").eq("coach_id", coachId) : Promise.resolve({ data: [] as any[] }),
+    coachId ? supabase.from("open_sessions").select("title, starts_at, host_name, is_open").eq("coach_id", coachId) : Promise.resolve({ data: [] as any[] }),
+  ]);
+
+  const week = buildWeek(classRes.data ?? [], openRes.data ?? []);
+  const factors = (hsRes.data?.factors ?? {}) as Record<string, number>;
+
+  return {
+    name: profile?.full_name ?? "Élève",
+    coachId,
+    health: hsRes.data?.score ?? null,
+    factors: Object.entries(factors).map(([k, v]) => ({ label: FR_FACTORS[k] ?? k, value: v })),
+    program: progRes.data ? { id: progRes.data.id as string, title: progRes.data.title as string, status: progRes.data.status as string } : null,
+    lastMessage: lastMsgRes.data
+      ? { body: lastMsgRes.data.body as string, fromCoach: lastMsgRes.data.sender === "coach", time: rel(lastMsgRes.data.created_at) }
+      : null,
+    nextSession: week[0] ?? null,
+  };
+}
+
+export async function getStudentProgram(supabase: SupabaseClient, studentId: string) {
+  const { data: prog } = await supabase
+    .from("programs")
+    .select("id, title, plan, status")
+    .eq("student_id", studentId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!prog) return null;
+
+  const { data: annots = [] } = await supabase
+    .from("program_annotations")
+    .select("id, author, body, status, created_at")
+    .eq("program_id", prog.id)
+    .order("created_at", { ascending: true });
+
+  return {
+    id: prog.id as string,
+    title: prog.title as string,
+    status: prog.status as string,
+    plan: prog.plan as Plan,
+    annotations: (annots ?? []).map((a: any) => ({
+      id: a.id as string, author: a.author as "coach" | "student", body: a.body as string, time: rel(a.created_at),
+    })),
+  };
+}
+
+export async function getStudentJournal(supabase: SupabaseClient, studentId: string) {
+  const { data = [] } = await supabase
+    .from("journal_entries")
+    .select("id, session_ref, exercise, load, reps, rpe, note, created_at")
+    .eq("student_id", studentId)
+    .order("created_at", { ascending: false })
+    .limit(30);
+  return (data ?? []).map((j: any) => ({
+    id: j.id as string,
+    day: dayAbbr(j.created_at),
+    time: rel(j.created_at),
+    sessionRef: j.session_ref as string,
+    exercise: j.exercise as string,
+    load: j.load as number | null,
+    reps: j.reps as number | null,
+    rpe: j.rpe as number | null,
+    note: j.note as string | null,
+  }));
 }

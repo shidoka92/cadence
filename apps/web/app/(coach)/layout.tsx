@@ -9,9 +9,10 @@ export default async function CoachLayout({ children }: { children: React.ReactN
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name")
+    .select("full_name, role")
     .eq("id", user.id)
     .single();
+  if (profile?.role === "student") redirect("/eleve/accueil");
 
   return (
     <div className="min-h-screen flex bg-bg">

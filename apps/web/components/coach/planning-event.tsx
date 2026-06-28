@@ -2,6 +2,7 @@ import { cn } from "@/lib/cn";
 import { Badge } from "@/components/ui";
 
 export type PlanningEventData = {
+  id?: string;
   type: "cours" | "open";
   title: string;
   time: string;
