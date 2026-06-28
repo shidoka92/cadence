@@ -1,5 +1,8 @@
 import Stripe from "stripe";
 
+/** Commission Cadence sur chaque abonnement élève. */
+export const PLATFORM_FEE_PERCENT = 10;
+
 let _stripe: Stripe | null = null;
 
 /** null si STRIPE_SECRET_KEY n'est pas configurée (dev sans Stripe, ou oubli de variable). */

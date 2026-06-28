@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { baseUrl } from "@/lib/url";
 
 type PaymentLinkInfo = {
@@ -33,7 +33,7 @@ export async function createCheckoutSession(studentId: string, _formData: FormDa
       quantity: 1,
     }],
     subscription_data: {
-      application_fee_percent: 10,
+      application_fee_percent: PLATFORM_FEE_PERCENT,
       transfer_data: { destination: info.stripe_account_id },
       metadata: { studentId, coachId: info.coach_id },
     },

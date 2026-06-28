@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type DbStatus = "active" | "past_due" | "canceled";
@@ -54,6 +54,25 @@ export async function POST(req: NextRequest) {
       if (studentId && coachId) {
         const status = event.type === "customer.subscription.deleted" ? "canceled" : mapStatus(sub.status);
         await upsertSubscription(studentId, coachId, sub.id, status);
+      }
+      break;
+    }
+    case "invoice.payment_succeeded": {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id;
+      if (subId) {
+        const sub = await stripe.subscriptions.retrieve(subId);
+        const studentId = sub.metadata?.studentId;
+        const coachId = sub.metadata?.coachId;
+        if (studentId && coachId) {
+          const amount = invoice.amount_paid / 100;
+          const applicationFee = Math.round(amount * PLATFORM_FEE_PERCENT) / 100;
+          const admin = createAdminClient();
+          await admin.from("payments").upsert(
+            { type: "subscription", student_id: studentId, coach_id: coachId, stripe_id: invoice.id, amount, application_fee: applicationFee },
+            { onConflict: "stripe_id" }
+          );
+        }
       }
       break;
     }

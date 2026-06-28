@@ -274,10 +274,29 @@ export async function getRevenue(supabase: SupabaseClient, coachId: string) {
   const { data: profs = [] } = ids.length ? await supabase.from("profiles").select("id, full_name").in("id", ids) : { data: [] as any[] };
   const nameOf: Record<string, string> = Object.fromEntries(profs!.map((p: any) => [p.id, p.full_name]));
   const rows = subs!.map((s: any) => ({ name: nameOf[s.student_id] ?? "Élève", status: s.status as string }));
+
+  const { data: pays = [] } = await supabase
+    .from("payments")
+    .select("student_id, amount, application_fee, created_at")
+    .eq("coach_id", coachId)
+    .order("created_at", { ascending: false });
+
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+  const net = (p: any) => Number(p.amount ?? 0) - Number(p.application_fee ?? 0);
+  const netTotal = pays!.reduce((sum, p) => sum + net(p), 0);
+  const netThisMonth = pays!.filter((p: any) => new Date(p.created_at) >= monthStart).reduce((sum, p) => sum + net(p), 0);
+  const recentPayments = pays!.slice(0, 10).map((p: any) => ({
+    name: nameOf[p.student_id] ?? "Élève",
+    amount: Number(p.amount ?? 0),
+    net: net(p),
+    date: new Date(p.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }),
+  }));
+
   return {
     active: rows.filter((r) => r.status === "active").length,
     pastDue: rows.filter((r) => r.status === "past_due").length,
     total: rows.length, rows,
+    netTotal, netThisMonth, recentPayments,
   };
 }
 
