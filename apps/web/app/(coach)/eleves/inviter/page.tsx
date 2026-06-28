@@ -43,7 +43,7 @@ export default function InviterPage() {
           <button onClick={() => { setLink(null); setCopied(false); }} className="font-display text-xs font-semibold uppercase tracking-wide text-muted mt-3">Générer un autre</button>
         </div>
       )}
-      {error && <p className="text-xs text-risk mt-3">{error}</p>}
+      {error && <p role="alert" className="text-xs text-risk mt-3">{error}</p>}
     </div>
   );
 }

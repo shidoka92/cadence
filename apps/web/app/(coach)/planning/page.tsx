@@ -16,9 +16,9 @@ export default async function PlanningPage({ searchParams }: { searchParams: { w
       <header className="flex items-center gap-4 px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Planning</h1>
         <div className="flex items-center gap-2 ml-4">
-          <Link href={`/planning?w=${weekOffset - 1}`} className="text-muted hover:text-text"><ChevronLeft size={18} /></Link>
+          <Link href={`/planning?w=${weekOffset - 1}`} aria-label="Semaine précédente" className="flex items-center justify-center w-9 h-9 rounded-md text-muted hover:text-text hover:bg-surf transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/70"><ChevronLeft size={18} /></Link>
           <span className="font-mono text-xs text-muted w-44 text-center">{planning.label}</span>
-          <Link href={`/planning?w=${weekOffset + 1}`} className="text-muted hover:text-text"><ChevronRight size={18} /></Link>
+          <Link href={`/planning?w=${weekOffset + 1}`} aria-label="Semaine suivante" className="flex items-center justify-center w-9 h-9 rounded-md text-muted hover:text-text hover:bg-surf transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/70"><ChevronRight size={18} /></Link>
         </div>
         <Link href="/planning/nouveau" className="ml-auto"><Button>+ Créer un cours</Button></Link>
       </header>

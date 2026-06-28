@@ -24,6 +24,8 @@ export function Button({ variant = "primary", size = "md", className, ...props }
     <button
       className={cn(
         "font-display font-semibold uppercase tracking-wide rounded-md cursor-pointer transition",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
         variants[variant],
         sizes[size],
         className

@@ -67,7 +67,7 @@ export default function NouveauCoursPage() {
           )}
         </div>
 
-        {error && <p className="text-xs text-risk">{error}</p>}
+        {error && <p role="alert" className="text-xs text-risk">{error}</p>}
 
         <div className="flex gap-2.5 pt-2">
           <Button type="submit" disabled={loading}>{loading ? "Création…" : "Créer le cours"}</Button>

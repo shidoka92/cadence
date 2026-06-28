@@ -85,7 +85,7 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
           <div className="text-xs text-muted mt-0.5 px-1.5">Pour {student}</div>
         </div>
         <div className="ml-auto flex items-center gap-2.5 shrink-0">
-          {error && <span className="text-xs text-risk">{error}</span>}
+          {error && <span role="alert" className="text-xs text-risk">{error}</span>}
           <Button onClick={onSave} disabled={!dirty || saving}>{saving ? "Enregistrement…" : dirty ? "Enregistrer" : "Enregistré ✓"}</Button>
         </div>
       </header>
@@ -104,14 +104,14 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
             <div className="flex gap-2 items-stretch mb-2">
               {plan.blocks.map((b, i) => (
                 <div key={b.id} style={{ flexGrow: b.weeks.length, flexBasis: 0 }} className={cn("rounded-md border p-3 relative group", tint[colorOf(i)])}>
-                  <button onClick={() => removeBlock(i)} className="absolute top-1.5 right-1.5 text-ghost hover:text-risk opacity-0 group-hover:opacity-100 transition"><X size={13} /></button>
+                  <button onClick={() => removeBlock(i)} aria-label="Supprimer le bloc" className="absolute top-1.5 right-1.5 text-ghost hover:text-risk opacity-0 group-hover:opacity-100 transition"><X size={13} /></button>
                   <input value={b.focus} onChange={(e) => renameBlock(i, e.target.value)} className={cn("font-display font-semibold uppercase tracking-wide", textTint[colorOf(i)], inlineInput)} />
                   <div className="flex items-center gap-2 mt-1 px-1.5">
                     <span className="font-mono text-[10px] text-muted">S{b.weeks[0]}–S{b.weeks[b.weeks.length - 1]}</span>
                     <div className="flex items-center gap-1 ml-auto">
-                      <button onClick={() => changeWeeks(i, -1)} className="w-4 h-4 rounded bg-surf2 border border-line2 text-muted flex items-center justify-center"><Minus size={10} /></button>
+                      <button onClick={() => changeWeeks(i, -1)} aria-label="Retirer une semaine" className="w-4 h-4 rounded bg-surf2 border border-line2 text-muted flex items-center justify-center"><Minus size={10} /></button>
                       <span className="font-mono text-[10px] text-ghost w-7 text-center">{b.weeks.length} sem</span>
-                      <button onClick={() => changeWeeks(i, 1)} className="w-4 h-4 rounded bg-surf2 border border-line2 text-muted flex items-center justify-center"><Plus size={10} /></button>
+                      <button onClick={() => changeWeeks(i, 1)} aria-label="Ajouter une semaine" className="w-4 h-4 rounded bg-surf2 border border-line2 text-muted flex items-center justify-center"><Plus size={10} /></button>
                     </div>
                   </div>
                   <button onClick={() => { setBi(i); setSi(0); setZoom("bloc"); }} className="mt-2 w-full text-center font-display text-[10px] font-semibold uppercase tracking-wide text-acid border-t border-line/50 pt-1.5">Ouvrir →</button>
@@ -132,7 +132,7 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
                   <input value={s.name} onChange={(e) => renameSession(idx, e.target.value)} className={cn("font-display text-sm font-semibold uppercase tracking-wide flex-1", inlineInput)} />
                   <span className="font-mono text-[10px] text-ghost">{s.exercises.length} exos</span>
                   <button onClick={() => { setSi(idx); setZoom("seance"); }} className="font-display text-xs font-semibold uppercase tracking-wide text-acid px-2">Ouvrir</button>
-                  <button onClick={() => removeSession(idx)} className="text-ghost hover:text-risk"><X size={14} /></button>
+                  <button onClick={() => removeSession(idx)} aria-label="Supprimer la séance" className="text-ghost hover:text-risk"><X size={14} /></button>
                 </div>
               ))}
               <button onClick={addSession} className="w-full rounded-md border border-dashed border-line2 text-ghost hover:text-muted py-2.5 flex items-center justify-center gap-1.5 text-xs font-display uppercase tracking-wide"><Plus size={14} /> Séance</button>
@@ -167,10 +167,10 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
                       <div key={wi} className="bg-surf px-1.5 py-2 border-t border-l border-line relative">
                         <input value={c.v} onChange={(e) => editCell(ei, wi, e.target.value)}
                           className={cn("w-full rounded border px-1 py-1.5 font-mono text-xs text-center outline-none focus:border-acid", c.over ? "border-warn/50 bg-warn/10 text-warn" : "border-line2 bg-surf2 text-text")} />
-                        {c.over && <button onClick={() => resetCell(ei, wi)} title="auto" className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-surf2 border border-line2 text-ghost text-[8px] leading-none">×</button>}
+                        {c.over && <button onClick={() => resetCell(ei, wi)} title="auto" aria-label="Repasser en auto" className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-surf2 border border-line2 text-ghost text-[8px] leading-none">×</button>}
                       </div>
                     ))}
-                    <button onClick={() => removeExercise(ei)} className="bg-surf border-t border-l border-line text-ghost hover:text-risk flex items-center justify-center"><X size={13} /></button>
+                    <button onClick={() => removeExercise(ei)} aria-label="Supprimer l'exercice" className="bg-surf border-t border-l border-line text-ghost hover:text-risk flex items-center justify-center"><X size={13} /></button>
                   </Row>
                 ))}
               </div>

@@ -12,7 +12,8 @@ export function InviteForm({ token, coachName }: { token: string; coachName: str
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function submit() {
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
     const supabase = createClient();
@@ -28,15 +29,15 @@ export function InviteForm({ token, coachName }: { token: string; coachName: str
     <div className="bg-surf border border-line rounded-lg p-6">
       <h1 className="font-display text-lg font-semibold uppercase tracking-wide mb-1">Rejoindre {coachName}</h1>
       <p className="text-xs text-muted mb-6">Crée ton compte élève.</p>
-      <div className="space-y-3">
-        <Input placeholder="Ton nom" value={name} onChange={(e) => setName(e.target.value)} />
-        <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <Input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} />
-        {error && <p className="text-xs text-risk">{error}</p>}
-        <Button className="w-full justify-center" disabled={loading} onClick={submit}>
+      <form onSubmit={submit} className="space-y-3">
+        <Input placeholder="Ton nom" aria-label="Ton nom" autoComplete="name" required value={name} onChange={(e) => setName(e.target.value)} />
+        <Input type="email" placeholder="Email" aria-label="Email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input type="password" placeholder="Mot de passe" aria-label="Mot de passe" autoComplete="new-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+        {error && <p role="alert" className="text-xs text-risk">{error}</p>}
+        <Button type="submit" className="w-full justify-center" disabled={loading}>
           {loading ? "Création…" : "Créer mon compte"}
         </Button>
-      </div>
+      </form>
     </div>
   );
 }

@@ -11,7 +11,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit() {
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
     const supabase = createClient();
@@ -31,14 +32,14 @@ export default function LoginPage() {
         </div>
         <div className="bg-surf border border-line rounded-lg p-6">
           <h1 className="font-display text-xl font-semibold uppercase tracking-wide mb-5">Connexion</h1>
-          <div className="space-y-3">
-            <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <Input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} />
-            {error && <p className="text-xs text-risk">{error}</p>}
-            <Button className="w-full justify-center" disabled={loading} onClick={onSubmit}>
+          <form onSubmit={onSubmit} className="space-y-3">
+            <Input type="email" placeholder="Email" aria-label="Email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input type="password" placeholder="Mot de passe" aria-label="Mot de passe" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            {error && <p role="alert" className="text-xs text-risk">{error}</p>}
+            <Button type="submit" className="w-full justify-center" disabled={loading}>
               {loading ? "Connexion…" : "Se connecter"}
             </Button>
-          </div>
+          </form>
         </div>
       </div>
     </main>

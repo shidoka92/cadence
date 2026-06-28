@@ -28,9 +28,9 @@ export default async function ElevePlanningPage({ searchParams }: { searchParams
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Planning</h1>
         {planning && (
           <div className="flex items-center gap-2 ml-4">
-            <Link href={`/eleve/planning?w=${weekOffset - 1}`} className="text-muted hover:text-text"><ChevronLeft size={18} /></Link>
+            <Link href={`/eleve/planning?w=${weekOffset - 1}`} aria-label="Semaine précédente" className="flex items-center justify-center w-9 h-9 rounded-md text-muted hover:text-text hover:bg-surf transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/70"><ChevronLeft size={18} /></Link>
             <span className="font-mono text-xs text-muted w-44 text-center">{planning.label}</span>
-            <Link href={`/eleve/planning?w=${weekOffset + 1}`} className="text-muted hover:text-text"><ChevronRight size={18} /></Link>
+            <Link href={`/eleve/planning?w=${weekOffset + 1}`} aria-label="Semaine suivante" className="flex items-center justify-center w-9 h-9 rounded-md text-muted hover:text-text hover:bg-surf transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/70"><ChevronRight size={18} /></Link>
           </div>
         )}
         <Link href="/eleve/planning/nouveau" className="ml-auto"><Button variant="secondary"><Plus size={14} className="mr-1.5 inline" />Héberger une séance</Button></Link>

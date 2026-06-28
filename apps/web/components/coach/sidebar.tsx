@@ -57,7 +57,7 @@ export function Sidebar({ coachName = "Coach" }: { coachName?: string }) {
           <div className="font-mono text-[10px] text-ghost uppercase">Coach</div>
         </div>
         <form action="/auth/signout" method="post" className="ml-auto">
-          <button type="submit" aria-label="Se déconnecter" className="text-ghost hover:text-risk transition p-1">
+          <button type="submit" aria-label="Se déconnecter" className="flex items-center justify-center w-9 h-9 rounded-md text-ghost hover:text-risk hover:bg-surf transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/70">
             <LogOut size={16} />
           </button>
         </form>
