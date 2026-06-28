@@ -3,6 +3,23 @@ import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+type DbStatus = "active" | "past_due" | "canceled";
+
+/** Réduit les statuts Stripe (incomplete, trialing, unpaid, paused...) aux 3 valeurs de l'enum DB. */
+function mapStatus(status: Stripe.Subscription.Status): DbStatus {
+  if (status === "active" || status === "trialing") return "active";
+  if (status === "past_due" || status === "unpaid" || status === "incomplete") return "past_due";
+  return "canceled"; // canceled, incomplete_expired, paused
+}
+
+async function upsertSubscription(studentId: string, coachId: string, stripeSubId: string, status: DbStatus) {
+  const admin = createAdminClient();
+  await admin.from("subscriptions").upsert(
+    { student_id: studentId, coach_id: coachId, stripe_sub_id: stripeSubId, status, updated_at: new Date().toISOString() },
+    { onConflict: "student_id" }
+  );
+}
+
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -19,22 +36,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Signature invalide" }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const studentId = session.metadata?.studentId;
-    const coachId = session.metadata?.coachId;
-    if (session.mode === "subscription" && session.subscription && studentId && coachId) {
-      const admin = createAdminClient();
-      await admin.from("subscriptions").upsert(
-        {
-          student_id: studentId,
-          coach_id: coachId,
-          stripe_sub_id: String(session.subscription),
-          status: "active",
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "student_id" }
-      );
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const studentId = session.metadata?.studentId;
+      const coachId = session.metadata?.coachId;
+      if (session.mode === "subscription" && session.subscription && studentId && coachId) {
+        await upsertSubscription(studentId, coachId, String(session.subscription), "active");
+      }
+      break;
+    }
+    case "customer.subscription.updated":
+    case "customer.subscription.deleted": {
+      const sub = event.data.object as Stripe.Subscription;
+      const studentId = sub.metadata?.studentId;
+      const coachId = sub.metadata?.coachId;
+      if (studentId && coachId) {
+        const status = event.type === "customer.subscription.deleted" ? "canceled" : mapStatus(sub.status);
+        await upsertSubscription(studentId, coachId, sub.id, status);
+      }
+      break;
     }
   }
 
