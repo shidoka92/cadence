@@ -1,0 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { background: theme(colors.bg); color: theme(colors.text); }
+
+@layer components {
+  .caution-stripe {
+    background: repeating-linear-gradient(135deg, theme(colors.acid) 0 9px, theme(colors.bg) 9px 18px);
+  }
+}

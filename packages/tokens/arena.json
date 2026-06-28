@@ -1,0 +1,14 @@
+{
+  "colors": {
+    "bg": "#0C0E11", "surf": "#15181D", "surf2": "#1D2229", "hover": "#222831",
+    "line": "#282E36", "line2": "#39424D", "text": "#F1F4F6", "muted": "#8C969F",
+    "ghost": "#5A636C", "acid": "#1FB2FF", "onAcid": "#06151F", "ok": "#3FB871",
+    "risk": "#FF5A4D", "warn": "#FFB23E", "violet": "#B06BFF"
+  },
+  "fonts": {
+    "display": "Oswald, Impact, sans-serif",
+    "body": "Inter, system-ui, sans-serif",
+    "mono": "\"Space Mono\", ui-monospace, monospace"
+  },
+  "radii": { "sm": "8px", "md": "11px", "lg": "14px", "pill": "999px" }
+}
