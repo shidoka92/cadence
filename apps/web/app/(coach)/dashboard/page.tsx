@@ -26,7 +26,7 @@ export default async function DashboardPage() {
       <header className="flex items-center gap-4 px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Bonjour, <span className="text-acid">{firstName}</span></h1>
         <span className="font-mono text-xs text-muted ml-auto">{today}</span>
-        <Button>+ Nouveau programme</Button>
+        <Link href="/eleves"><Button>+ Nouveau programme</Button></Link>
       </header>
 
       <div className="flex-1 overflow-y-auto px-7 py-6">
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
               {queue.length === 0 && <div className="px-4 py-6 text-sm text-muted">Rien à traiter pour le moment.</div>}
               {queue.map((a, i) => {
                 const m = QUEUE_ICON[a.kind];
-                return <ActionItem key={i} icon={m.icon} iconClass={m.cls} time={a.time}
+                return <ActionItem key={i} icon={m.icon} iconClass={m.cls} time={a.time} href={a.href}
                   title={<><b className="font-semibold">{a.bold}</b>{a.title}</>} sub={a.sub} />;
               })}
             </div>

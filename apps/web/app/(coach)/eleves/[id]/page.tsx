@@ -29,7 +29,7 @@ export default async function FicheElevePage({ params }: { params: { id: string 
           </div>
         </div>
         <div className="ml-auto flex gap-2.5">
-          <Button variant="secondary">Message</Button>
+          <Link href={`/messagerie?s=${params.id}`}><Button variant="secondary">Message</Button></Link>
           <form action={createProgram}>
             <input type="hidden" name="studentId" value={params.id} />
             <Button type="submit">{s.program ? "Nouveau programme" : "Assigner un programme"}</Button>

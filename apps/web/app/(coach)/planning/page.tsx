@@ -1,24 +1,26 @@
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui";
 import { PlanningEvent } from "@/components/coach/planning-event";
 import { createClient } from "@/lib/supabase/server";
 import { getPlanning } from "@/lib/queries";
 
-export default async function PlanningPage() {
+export default async function PlanningPage({ searchParams }: { searchParams: { w?: string } }) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const planning = await getPlanning(supabase, user!.id);
+  const weekOffset = parseInt(searchParams.w ?? "0", 10) || 0;
+  const planning = await getPlanning(supabase, user!.id, weekOffset);
 
   return (
     <div className="flex flex-col h-screen">
       <header className="flex items-center gap-4 px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Planning</h1>
         <div className="flex items-center gap-2 ml-4">
-          <button className="text-muted hover:text-text"><ChevronLeft size={18} /></button>
+          <Link href={`/planning?w=${weekOffset - 1}`} className="text-muted hover:text-text"><ChevronLeft size={18} /></Link>
           <span className="font-mono text-xs text-muted w-44 text-center">{planning.label}</span>
-          <button className="text-muted hover:text-text"><ChevronRight size={18} /></button>
+          <Link href={`/planning?w=${weekOffset + 1}`} className="text-muted hover:text-text"><ChevronRight size={18} /></Link>
         </div>
-        <Button className="ml-auto">+ Créer un cours</Button>
+        <Link href="/planning/nouveau" className="ml-auto"><Button>+ Créer un cours</Button></Link>
       </header>
 
       <div className="flex items-center gap-4 px-7 py-3 border-b border-line">
@@ -43,9 +45,9 @@ export default async function PlanningPage() {
               <div className="space-y-2">
                 {col.events.map((e, i) => <PlanningEvent key={i} e={e} />)}
                 {col.events.length === 0 && (
-                  <button className="w-full rounded-md border border-dashed border-line2 text-ghost hover:text-muted py-3 flex items-center justify-center transition">
+                  <Link href={`/planning/nouveau?date=${col.isoDate}`} className="w-full rounded-md border border-dashed border-line2 text-ghost hover:text-muted py-3 flex items-center justify-center transition">
                     <Plus size={14} />
-                  </button>
+                  </Link>
                 )}
               </div>
             </div>

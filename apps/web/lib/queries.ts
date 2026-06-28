@@ -19,7 +19,7 @@ function hhmm(iso: string) { return new Date(iso).toLocaleTimeString("fr-FR", { 
 function num(v: string) { return parseFloat(v.replace(",", ".").replace("+", "").replace(/[^\d.]/g, "")); }
 
 /* ---------- Dashboard ---------- */
-export type QueueItem = { kind: "annotation" | "newstudent" | "sub"; bold: string; title: string; sub: string; time: string };
+export type QueueItem = { kind: "annotation" | "newstudent" | "sub"; bold: string; title: string; sub: string; time: string; href: string };
 export type RiskItem = { id: string; name: string; score: number; why: string };
 export type WeekItem = { day: string; type: "cours" | "open"; title: string; meta: string };
 
@@ -49,10 +49,10 @@ export async function getDashboard(supabase: SupabaseClient, coachId: string) {
   const week = buildWeek(classRes.data ?? [], openRes.data ?? []);
   const queue: QueueItem[] = [];
   for (const a of annots!) {
-    queue.push({ kind: "annotation", bold: nameOf[progStudent[a.program_id]] ?? "Élève", title: " a commenté son programme", sub: a.body.slice(0, 60), time: rel(a.created_at) });
+    queue.push({ kind: "annotation", bold: nameOf[progStudent[a.program_id]] ?? "Élève", title: " a commenté son programme", sub: a.body.slice(0, 60), time: rel(a.created_at), href: `/programmes/${a.program_id}` });
   }
   for (const s of students!) {
-    if (!studentsWithProgram.has(s.id)) queue.push({ kind: "newstudent", bold: s.full_name, title: " — aucun programme", sub: "à démarrer", time: "" });
+    if (!studentsWithProgram.has(s.id)) queue.push({ kind: "newstudent", bold: s.full_name, title: " — aucun programme", sub: "à démarrer", time: "", href: `/eleves/${s.id}` });
   }
 
   const kpis = [
@@ -214,7 +214,7 @@ export async function getPlanningWeek(supabase: SupabaseClient, coachId: string)
 
 /* ---------- Planning (fenêtre glissante 7 jours) ---------- */
 
-export async function getPlanning(supabase: SupabaseClient, coachId: string) {
+export async function getPlanning(supabase: SupabaseClient, coachId: string, weekOffset = 0) {
   const [classRes, openRes] = await Promise.all([
     supabase.from("classes").select("id, title, capacity, level, pricing, price, starts_at").eq("coach_id", coachId),
     supabase.from("open_sessions").select("title, host_name, slots, is_open, starts_at").eq("coach_id", coachId),
@@ -230,9 +230,9 @@ export async function getPlanning(supabase: SupabaseClient, coachId: string) {
   const enrolled: Record<string, number> = {};
   for (const e of enrolls!) enrolled[e.class_id] = (enrolled[e.class_id] ?? 0) + 1;
 
-  // 7 jours à partir d'aujourd'hui
-  const start = new Date(); start.setHours(0, 0, 0, 0);
-  const days: { day: string; date: string; events: PlanningEventData[] }[] = [];
+  // 7 jours à partir d'aujourd'hui, décalés de weekOffset semaines
+  const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() + weekOffset * 7);
+  const days: { day: string; date: string; isoDate: string; events: PlanningEventData[] }[] = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(start); d.setDate(start.getDate() + i);
     const a = d.getTime(), b = a + 864e5;
@@ -246,7 +246,7 @@ export async function getPlanning(supabase: SupabaseClient, coachId: string) {
       if (t >= a && t < b) events.push({ type: "open", title: o.title, time: hhmm(o.starts_at), host: o.host_name, slots: `${o.slots} pl.` });
     }
     events.sort((x, y) => x.time.localeCompare(y.time));
-    days.push({ day: dayAbbr(d.toISOString()), date: String(d.getDate()), events });
+    days.push({ day: dayAbbr(d.toISOString()), date: String(d.getDate()), isoDate: d.toISOString().slice(0, 10), events });
   }
   const end = new Date(start); end.setDate(start.getDate() + 6);
   const month = (dt: Date) => dt.toLocaleDateString("fr-FR", { month: "short" });
