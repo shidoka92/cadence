@@ -23,8 +23,8 @@ export default async function ElevePlanningPage({ searchParams }: { searchParams
   const requestOf: Record<string, string> = Object.fromEntries((requests ?? []).map((r: any) => [r.session_id, r.status]));
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="flex items-center gap-4 px-7 py-4 border-b border-line">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+      <header className="flex items-center flex-wrap gap-3 gap-y-2 px-4 md:px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Planning</h1>
         {planning && (
           <div className="flex items-center gap-2 ml-4">
@@ -36,7 +36,7 @@ export default async function ElevePlanningPage({ searchParams }: { searchParams
         <Link href="/eleve/planning/nouveau" className="ml-auto"><Button variant="secondary"><Plus size={14} className="mr-1.5 inline" />Héberger une séance</Button></Link>
       </header>
 
-      <div className="flex-1 overflow-auto px-7 py-5">
+      <div className="flex-1 overflow-auto px-4 md:px-7 py-5">
         {!planning ? (
           <p className="text-sm text-muted">Tu n&apos;es relié à aucun coach pour l&apos;instant.</p>
         ) : (

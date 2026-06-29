@@ -19,7 +19,7 @@ export default async function EleveLayout({ children }: { children: React.ReactN
     : { data: null };
 
   return (
-    <div className="min-h-screen flex bg-bg">
+    <div className="min-h-screen flex flex-col md:flex-row bg-bg">
       <StudentSidebar studentName={profile?.full_name ?? "Élève"} coachName={coach?.full_name} />
       <div className="flex-1 min-w-0">{children}</div>
     </div>

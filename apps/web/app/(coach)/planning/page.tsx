@@ -12,8 +12,8 @@ export default async function PlanningPage({ searchParams }: { searchParams: { w
   const planning = await getPlanning(supabase, user!.id, weekOffset);
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="flex items-center gap-4 px-7 py-4 border-b border-line">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+      <header className="flex items-center flex-wrap gap-3 gap-y-2 px-4 md:px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Planning</h1>
         <div className="flex items-center gap-2 ml-4">
           <Link href={`/planning?w=${weekOffset - 1}`} aria-label="Semaine précédente" className="flex items-center justify-center w-9 h-9 rounded-md text-muted hover:text-text hover:bg-surf transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/70"><ChevronLeft size={18} /></Link>
@@ -23,7 +23,7 @@ export default async function PlanningPage({ searchParams }: { searchParams: { w
         <Link href="/planning/nouveau" className="ml-auto"><Button>+ Créer un cours</Button></Link>
       </header>
 
-      <div className="flex items-center gap-4 px-7 py-3 border-b border-line">
+      <div className="flex items-center gap-4 px-4 md:px-7 py-3 border-b border-line">
         <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-sm bg-acid"></span><span className="font-mono text-[10px] uppercase tracking-wider text-muted">Cours collectif</span></div>
         <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-sm bg-violet"></span><span className="font-mono text-[10px] uppercase tracking-wider text-muted">Séance ouverte</span></div>
         <div className="flex items-center gap-2 ml-auto">
@@ -34,7 +34,7 @@ export default async function PlanningPage({ searchParams }: { searchParams: { w
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-7 py-5">
+      <div className="flex-1 overflow-auto px-4 md:px-7 py-5">
         <div className="grid grid-cols-7 gap-2.5 min-w-[940px]">
           {planning.days.map((col, ci) => (
             <div key={ci}>

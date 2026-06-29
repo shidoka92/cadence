@@ -9,7 +9,7 @@ export default async function ProgrammesPage() {
   const programs = await getPrograms(supabase, user!.id);
 
   return (
-    <div className="px-7 py-6">
+    <div className="px-4 md:px-7 py-6">
       <h1 className="font-display text-2xl font-semibold uppercase tracking-wide mb-5">Programmes</h1>
       {programs.length === 0 ? (
         <Card className="p-8 text-center text-sm text-muted">Aucun programme. Crée-en un depuis une fiche élève.</Card>

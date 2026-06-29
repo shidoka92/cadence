@@ -11,12 +11,12 @@ export default async function EleveProgrammePage() {
   const program = await getStudentProgram(supabase, user!.id);
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="px-7 py-4 border-b border-line">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+      <header className="px-4 md:px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Mon programme</h1>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-7 py-6 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 md:px-7 py-6 space-y-5">
         {!program ? (
           <p className="text-sm text-muted">Aucun programme assigné pour le moment.</p>
         ) : (

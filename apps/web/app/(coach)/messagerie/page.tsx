@@ -13,14 +13,14 @@ export default async function MessageriePage({ searchParams }: { searchParams: {
   const thread = selected ? await getThread(supabase, user!.id, selected) : null;
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-3.5rem)] md:h-screen">
       {/* conversations */}
-      <aside className="w-72 shrink-0 border-r border-line flex flex-col">
-        <div className="px-4 py-4 border-b border-line"><h1 className="font-display text-lg font-semibold uppercase tracking-wide">Messagerie</h1></div>
-        <div className="flex-1 overflow-y-auto">
+      <aside className="w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r border-line flex flex-col">
+        <div className="px-4 py-3 md:py-4 border-b border-line"><h1 className="font-display text-lg font-semibold uppercase tracking-wide">Messagerie</h1></div>
+        <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
           {convos.length === 0 && <div className="px-4 py-5 text-sm text-muted">Aucun élève.</div>}
           {convos.map((c) => (
-            <Link key={c.id} href={`/messagerie?s=${c.id}`} className={cn("flex items-center gap-3 px-4 py-3 border-b border-line transition", c.id === selected ? "bg-surf" : "hover:bg-hover")}>
+            <Link key={c.id} href={`/messagerie?s=${c.id}`} className={cn("flex items-center gap-3 px-4 py-3 border-b border-line transition shrink-0 w-52 md:w-auto", c.id === selected ? "bg-surf" : "hover:bg-hover")}>
               <Avatar initials={c.initials} className="w-9 h-9" />
               <div className="min-w-0">
                 <div className="font-display text-sm font-semibold uppercase tracking-wide truncate">{c.name}</div>

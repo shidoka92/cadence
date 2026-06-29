@@ -15,7 +15,7 @@ export default async function CoachLayout({ children }: { children: React.ReactN
   if (profile?.role === "student") redirect("/eleve/accueil");
 
   return (
-    <div className="min-h-screen flex bg-bg">
+    <div className="min-h-screen flex flex-col md:flex-row bg-bg">
       <Sidebar coachName={profile?.full_name ?? "Coach"} />
       <div className="flex-1 min-w-0">{children}</div>
     </div>

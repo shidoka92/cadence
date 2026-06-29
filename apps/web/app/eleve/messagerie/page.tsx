@@ -13,7 +13,7 @@ export default async function EleveMessageriePage() {
   const thread = coachId ? await getThread(supabase, coachId, user!.id) : null;
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
       <div className="px-6 py-4 border-b border-line"><span className="font-display text-lg font-semibold uppercase tracking-wide">{thread?.name ?? "Messagerie"}</span></div>
 
       {!coachId ? (

@@ -73,8 +73,8 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="flex items-center gap-4 px-7 py-4 border-b border-line">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+      <header className="flex items-center gap-4 px-4 md:px-7 py-4 border-b border-line">
         <div className="min-w-0">
           <div className="flex items-center gap-2.5">
             <input value={title} onChange={(e) => { setTitle(e.target.value); setDirty(true); }}
@@ -90,20 +90,20 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
         </div>
       </header>
 
-      <div className="flex items-center gap-1.5 px-7 py-2.5 border-b border-line text-xs">
+      <div className="flex items-center gap-1.5 px-4 md:px-7 py-2.5 border-b border-line text-xs">
         <button onClick={() => setZoom("macro")} className={cn("font-display uppercase tracking-wide", zoom === "macro" ? "text-acid" : "text-muted")}>Macro</button>
         {zoom !== "macro" && bloc && <><ChevronRight size={12} className="text-ghost" /><button onClick={() => setZoom("bloc")} className={cn("font-display uppercase tracking-wide", zoom === "bloc" ? "text-acid" : "text-muted")}>Bloc · {bloc.focus}</button></>}
         {zoom === "seance" && session && <><ChevronRight size={12} className="text-ghost" /><span className="font-display uppercase tracking-wide text-acid">{session.name}</span></>}
       </div>
 
-      <div className="flex-1 overflow-auto px-7 py-6">
+      <div className="flex-1 overflow-auto px-4 md:px-7 py-6">
         {/* MACRO */}
         {zoom === "macro" && (
           <div>
             <div className="font-mono text-[10px] uppercase tracking-widest text-ghost mb-3">Périodisation — édite, ajoute ou ouvre un bloc</div>
-            <div className="flex gap-2 items-stretch mb-2">
+            <div className="flex gap-2 items-stretch mb-2 overflow-x-auto">
               {plan.blocks.map((b, i) => (
-                <div key={b.id} style={{ flexGrow: b.weeks.length, flexBasis: 0 }} className={cn("rounded-md border p-3 relative group", tint[colorOf(i)])}>
+                <div key={b.id} style={{ flexGrow: b.weeks.length, flexBasis: 0 }} className={cn("rounded-md border p-3 relative group min-w-[150px]", tint[colorOf(i)])}>
                   <button onClick={() => removeBlock(i)} aria-label="Supprimer le bloc" className="absolute top-1.5 right-1.5 text-ghost hover:text-risk opacity-0 group-hover:opacity-100 transition"><X size={13} /></button>
                   <input value={b.focus} onChange={(e) => renameBlock(i, e.target.value)} className={cn("font-display font-semibold uppercase tracking-wide", textTint[colorOf(i)], inlineInput)} />
                   <div className="flex items-center gap-2 mt-1 px-1.5">
@@ -150,8 +150,8 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-warn/20 border border-warn/50"></span>override</span>
               </div>
             </div>
-            <div className="border border-line rounded-lg overflow-hidden">
-              <div className="grid items-stretch" style={{ gridTemplateColumns: `180px 120px repeat(${bloc.weeks.length}, 1fr) 36px` }}>
+            <div className="border border-line rounded-lg overflow-x-auto">
+              <div className="grid items-stretch min-w-[600px]" style={{ gridTemplateColumns: `180px 120px repeat(${bloc.weeks.length}, 1fr) 36px` }}>
                 <div className="bg-surf2 px-3 py-2.5 font-mono text-[10px] uppercase text-ghost">Exercice</div>
                 <div className="bg-surf2 px-3 py-2.5 font-mono text-[10px] uppercase text-ghost border-l border-line">Règle</div>
                 {bloc.weeks.map((w) => <div key={w} className="bg-surf2 px-2 py-2.5 font-mono text-[10px] uppercase text-ghost border-l border-line text-center">S{w}</div>)}

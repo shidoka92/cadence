@@ -14,13 +14,13 @@ export default async function EleveAccueilPage() {
   const today = new Date().toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short" }).toUpperCase();
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="flex items-center gap-4 px-7 py-4 border-b border-line">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+      <header className="flex items-center flex-wrap gap-3 gap-y-2 px-4 md:px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Salut, <span className="text-acid">{firstName}</span></h1>
         <span className="font-mono text-xs text-muted ml-auto">{today}</span>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-7 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 md:px-7 py-6 space-y-4">
         <div className="grid lg:grid-cols-2 gap-4">
           <Card>
             <CardHeader><CardTitle>Health Score</CardTitle></CardHeader>

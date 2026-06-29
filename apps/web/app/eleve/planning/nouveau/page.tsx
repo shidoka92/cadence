@@ -4,7 +4,7 @@ import { hostOpenSession } from "../actions";
 
 export default function HeberberSeancePage() {
   return (
-    <div className="px-7 py-6 max-w-md">
+    <div className="px-4 md:px-7 py-6 max-w-md">
       <div className="text-xs text-muted mb-4"><Link href="/eleve/planning" className="text-acid">Planning</Link> › Héberger une séance</div>
       <h1 className="font-display text-2xl font-semibold uppercase tracking-wide mb-6">Héberger une séance ouverte</h1>
 

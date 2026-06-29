@@ -8,14 +8,14 @@ export default async function RevenusPage() {
   const r = await getRevenue(supabase, user!.id);
 
   return (
-    <div className="px-7 py-6">
+    <div className="px-4 md:px-7 py-6">
       <h1 className="font-display text-2xl font-semibold uppercase tracking-wide mb-5">Revenus</h1>
 
-      <div className="grid grid-cols-2 gap-3.5 mb-3.5 max-w-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5 max-w-2xl">
         <KpiTile label="Revenu net (ce mois)" value={`${r.netThisMonth.toFixed(2)}€`} accent />
         <KpiTile label="Revenu net (total)" value={`${r.netTotal.toFixed(2)}€`} />
       </div>
-      <div className="grid grid-cols-3 gap-3.5 mb-5 max-w-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-5 max-w-2xl">
         <KpiTile label="Abonnés actifs" value={String(r.active)} />
         <KpiTile label="En retard" value={String(r.pastDue)} />
         <KpiTile label="Total" value={String(r.total)} />

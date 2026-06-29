@@ -9,12 +9,12 @@ export default async function EleveJournalPage() {
   const entries = await getStudentJournal(supabase, user!.id);
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="px-7 py-4 border-b border-line">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+      <header className="px-4 md:px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Journal</h1>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-7 py-6 space-y-5 max-w-2xl">
+      <div className="flex-1 overflow-y-auto px-4 md:px-7 py-6 space-y-5 max-w-2xl">
         <Card>
           <CardHeader><CardTitle>Nouvelle entrée</CardTitle></CardHeader>
           <form action={addJournalEntry} className="p-4 space-y-3">

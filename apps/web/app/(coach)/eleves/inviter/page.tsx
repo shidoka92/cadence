@@ -24,7 +24,7 @@ export default function InviterPage() {
   }
 
   return (
-    <div className="px-7 py-6 max-w-xl">
+    <div className="px-4 md:px-7 py-6 max-w-xl">
       <div className="text-xs text-muted mb-4"><Link href="/eleves" className="text-acid">Élèves</Link> › Inviter</div>
       <h1 className="font-display text-2xl font-semibold uppercase tracking-wide mb-1">Inviter un élève</h1>
       <p className="text-sm text-muted mb-6">Génère un lien unique. L&apos;élève crée son compte et se relie automatiquement à toi.</p>

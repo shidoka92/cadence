@@ -27,10 +27,10 @@ export default async function FicheElevePage({ params }: { params: { id: string 
   const paymentReady = Boolean(coach?.stripe_charges_enabled && coach?.subscription_price);
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="px-7 pt-4 text-xs text-muted"><Link href="/eleves" className="text-acid">Élèves</Link> › {s.name}</div>
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+      <div className="px-4 md:px-7 pt-4 text-xs text-muted"><Link href="/eleves" className="text-acid">Élèves</Link> › {s.name}</div>
 
-      <header className="flex items-center gap-4 px-7 py-5 border-b border-line">
+      <header className="flex items-center flex-wrap gap-3 gap-y-2 px-4 md:px-7 py-5 border-b border-line">
         <Avatar initials={s.initials} className="w-16 h-16 rounded-xl text-2xl font-display font-bold" />
         <div>
           <h1 className="font-display text-2xl font-bold uppercase tracking-tight leading-none">{s.name}</h1>
@@ -40,7 +40,7 @@ export default async function FicheElevePage({ params }: { params: { id: string 
             {s.flag && <Badge variant="warn">⚠ {s.flag}</Badge>}
           </div>
         </div>
-        <div className="ml-auto flex gap-2.5">
+        <div className="ml-auto flex flex-wrap gap-2.5">
           <Link href={`/messagerie?s=${params.id}`}><Button variant="secondary">Message</Button></Link>
           <form action={createProgram}>
             <input type="hidden" name="studentId" value={params.id} />
@@ -49,7 +49,7 @@ export default async function FicheElevePage({ params }: { params: { id: string 
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-7 py-5 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 md:px-7 py-5 space-y-4">
         <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-4">
           <Card>
             <CardHeader><CardTitle>Health Score</CardTitle>{s.health.score < 70 && <span className="font-mono text-[9px] text-warn ml-auto tracking-wider">À SURVEILLER</span>}</CardHeader>

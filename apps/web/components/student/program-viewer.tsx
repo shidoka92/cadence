@@ -35,9 +35,9 @@ export function ProgramViewer({ title, plan }: { title: string; plan: Plan }) {
       </div>
 
       {zoom === "macro" && (
-        <div className="flex gap-2 items-stretch">
+        <div className="flex gap-2 items-stretch overflow-x-auto">
           {plan.blocks.map((b, i) => (
-            <div key={b.id} style={{ flexGrow: b.weeks.length, flexBasis: 0 }} className={cn("rounded-md border p-3", tint[colorOf(i)])}>
+            <div key={b.id} style={{ flexGrow: b.weeks.length, flexBasis: 0 }} className={cn("rounded-md border p-3 min-w-[140px]", tint[colorOf(i)])}>
               <div className={cn("font-display font-semibold uppercase tracking-wide", textTint[colorOf(i)])}>{b.focus}</div>
               <div className="flex items-center gap-2 mt-1">
                 <span className="font-mono text-[10px] text-muted">S{b.weeks[0]}–S{b.weeks[b.weeks.length - 1]}</span>
@@ -62,8 +62,8 @@ export function ProgramViewer({ title, plan }: { title: string; plan: Plan }) {
       )}
 
       {zoom === "seance" && bloc && session && (
-        <div className="border border-line rounded-lg overflow-hidden">
-          <div className="grid items-stretch" style={{ gridTemplateColumns: `180px 120px repeat(${bloc.weeks.length}, 1fr)` }}>
+        <div className="border border-line rounded-lg overflow-x-auto">
+          <div className="grid items-stretch min-w-[560px]" style={{ gridTemplateColumns: `180px 120px repeat(${bloc.weeks.length}, 1fr)` }}>
             <div className="bg-surf2 px-3 py-2.5 font-mono text-[10px] uppercase text-ghost">Exercice</div>
             <div className="bg-surf2 px-3 py-2.5 font-mono text-[10px] uppercase text-ghost border-l border-line">Règle</div>
             {bloc.weeks.map((w) => <div key={w} className="bg-surf2 px-2 py-2.5 font-mono text-[10px] uppercase text-ghost border-l border-line text-center">S{w}</div>)}

@@ -22,14 +22,14 @@ export default async function DashboardPage() {
   const today = new Date().toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short" }).toUpperCase();
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="flex items-center gap-4 px-7 py-4 border-b border-line">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+      <header className="flex items-center flex-wrap gap-3 gap-y-2 px-4 md:px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Bonjour, <span className="text-acid">{firstName}</span></h1>
         <span className="font-mono text-xs text-muted ml-auto">{today}</span>
         <Link href="/eleves"><Button>+ Nouveau programme</Button></Link>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-7 py-6">
+      <div className="flex-1 overflow-y-auto px-4 md:px-7 py-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
           {kpis.map((k) => <KpiTile key={k.label} {...k} />)}
         </div>
