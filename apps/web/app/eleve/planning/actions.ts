@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe, PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { baseUrl } from "@/lib/url";
+import { notify } from "@/lib/notify";
 
 export async function enrollClass(formData: FormData) {
   const classId = String(formData.get("classId"));
@@ -49,6 +50,14 @@ export async function requestOpenSession(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   await supabase.from("open_session_requests").insert({ session_id: sessionId, student_id: user!.id });
   revalidatePath("/eleve/planning");
+
+  const [{ data: session }, { data: profile }] = await Promise.all([
+    supabase.from("open_sessions").select("host_student_id, title").eq("id", sessionId).single(),
+    supabase.from("profiles").select("full_name").eq("id", user!.id).single(),
+  ]);
+  if (session?.host_student_id) {
+    await notify(session.host_student_id, "open_request", { title: `${profile?.full_name ?? "Quelqu'un"} veut rejoindre « ${session.title} »`, href: "/eleve/planning" });
+  }
 }
 
 export async function hostOpenSession(formData: FormData) {

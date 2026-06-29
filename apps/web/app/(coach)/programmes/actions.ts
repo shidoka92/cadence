@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Plan } from "@cadence/types";
 import { decodeAnchor } from "@/lib/plan";
+import { notify } from "@/lib/notify";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -34,4 +35,9 @@ export async function addCoachAnnotation(formData: FormData) {
   const supabase = createClient();
   await supabase.from("program_annotations").insert({ program_id: programId, author: "coach", body, status: "sent", anchor });
   revalidatePath(`/programmes/${programId}`);
+
+  const { data: program } = await supabase.from("programs").select("student_id").eq("id", programId).single();
+  if (program?.student_id) {
+    await notify(program.student_id, "annotation", { title: "Ton coach a commenté ton programme", href: "/eleve/programme" });
+  }
 }

@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, FileText, NotebookPen, CalendarRange, MessageSquare, LogOut, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { LayoutGrid, FileText, NotebookPen, CalendarRange, MessageSquare, Settings, LogOut, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui";
 import { useSidebarCollapse } from "@/lib/use-sidebar-collapse";
+import { NotificationBell, type NotificationItem } from "@/components/shared/notification-bell";
 
 const items = [
   { href: "/eleve/accueil", label: "Accueil", icon: LayoutGrid },
@@ -13,14 +14,17 @@ const items = [
   { href: "/eleve/journal", label: "Journal", icon: NotebookPen },
   { href: "/eleve/planning", label: "Planning", icon: CalendarRange },
   { href: "/eleve/messagerie", label: "Messagerie", icon: MessageSquare },
+  { href: "/eleve/parametres", label: "Paramètres", icon: Settings },
 ];
 
 function initialsFrom(name: string) {
   return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }
 
-export function StudentSidebar({ studentName = "Élève", coachName }: { studentName?: string; coachName?: string }) {
+export function StudentSidebar({ studentName = "Élève", coachName, notifications }: { studentName?: string; coachName?: string; notifications?: { unreadCount: number; items: NotificationItem[] } }) {
   const path = usePathname();
+  const unreadCount = notifications?.unreadCount ?? 0;
+  const items_ = notifications?.items ?? [];
   const { collapsed, toggle } = useSidebarCollapse("cadence-sidebar-eleve");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -34,6 +38,7 @@ export function StudentSidebar({ studentName = "Élève", coachName }: { student
         </button>
         <div className="w-6 h-6 rounded-md bg-acid shrink-0" />
         <span className="font-display font-bold text-lg uppercase tracking-wider">Cadence</span>
+        <div className="ml-auto"><NotificationBell unreadCount={unreadCount} items={items_} /></div>
       </div>
 
       {mobileOpen && (
@@ -59,6 +64,7 @@ export function StudentSidebar({ studentName = "Élève", coachName }: { student
         <div className="flex items-center gap-2.5 px-2 pt-1 pb-5">
           <div className="w-7 h-7 rounded-md bg-acid shrink-0" />
           {!collapsed && <span className="font-display font-bold text-xl uppercase tracking-wider truncate">Cadence</span>}
+          {!collapsed && <div className="ml-auto"><NotificationBell unreadCount={unreadCount} items={items_} /></div>}
           <button onClick={() => setMobileOpen(false)} aria-label="Fermer le menu" className="md:hidden ml-auto flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-text hover:bg-surf transition">
             <X size={18} />
           </button>

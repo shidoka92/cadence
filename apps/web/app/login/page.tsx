@@ -40,6 +40,7 @@ export default function LoginPage() {
             <Button type="submit" className="w-full justify-center" disabled={loading}>
               {loading ? "Connexion…" : "Se connecter"}
             </Button>
+            <Link href="/mot-de-passe" className="block text-center text-xs text-muted hover:text-acid">Mot de passe oublié ?</Link>
           </form>
         </div>
         <p className="text-center text-[11px] text-ghost mt-5 font-mono uppercase tracking-wider">

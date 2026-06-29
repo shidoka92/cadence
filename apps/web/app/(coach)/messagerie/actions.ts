@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { notify } from "@/lib/notify";
 
 export async function sendMessage(formData: FormData) {
   const studentId = String(formData.get("studentId"));
@@ -10,4 +11,5 @@ export async function sendMessage(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   await supabase.from("messages").insert({ coach_id: user!.id, student_id: studentId, sender: "coach", body });
   revalidatePath("/messagerie");
+  await notify(studentId, "message", { title: "Nouveau message de ton coach", href: "/eleve/messagerie" });
 }

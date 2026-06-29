@@ -347,3 +347,21 @@ export async function getStudentJournal(supabase: SupabaseClient, studentId: str
     note: j.note as string | null,
   }));
 }
+
+/* ---------- Notifications ---------- */
+export async function getNotifications(supabase: SupabaseClient, userId: string) {
+  const [{ data = [] }, { count }] = await Promise.all([
+    supabase.from("notifications").select("id, payload, read, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
+    supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("read", false),
+  ]);
+  return {
+    unreadCount: count ?? 0,
+    items: (data ?? []).map((n: any) => ({
+      id: n.id as string,
+      title: (n.payload?.title as string) ?? "Notification",
+      href: n.payload?.href as string | undefined,
+      read: n.read as boolean,
+      time: rel(n.created_at),
+    })),
+  };
+}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe, PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notify } from "@/lib/notify";
 
 type DbStatus = "active" | "past_due" | "canceled";
 
@@ -67,6 +68,12 @@ export async function POST(req: NextRequest) {
       if (studentId && coachId) {
         const status = event.type === "customer.subscription.deleted" ? "canceled" : mapStatus(sub.status);
         await upsertSubscription(studentId, coachId, sub.id, status);
+        if (status !== "active") {
+          const admin = createAdminClient();
+          const { data: student } = await admin.from("profiles").select("full_name").eq("id", studentId).single();
+          const label = status === "past_due" ? "paiement en retard" : "abonnement annulé";
+          await notify(coachId, "subscription", { title: `${student?.full_name ?? "Un élève"} — ${label}`, href: "/revenus" });
+        }
       }
       break;
     }
