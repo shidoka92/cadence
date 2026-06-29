@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Card, Badge } from "@/components/ui";
+import { FileText } from "lucide-react";
+import { Card, Badge, Button, EmptyState } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getPrograms } from "@/lib/queries";
 
@@ -12,7 +13,14 @@ export default async function ProgrammesPage() {
     <div className="px-4 md:px-7 py-6">
       <h1 className="font-display text-2xl font-semibold uppercase tracking-wide mb-5">Programmes</h1>
       {programs.length === 0 ? (
-        <Card className="p-8 text-center text-sm text-muted">Aucun programme. Crée-en un depuis une fiche élève.</Card>
+        <Card>
+          <EmptyState
+            icon={FileText}
+            title="Aucun programme créé"
+            description="Un programme se crée depuis la fiche d'un élève — ouvre-en une et assigne-lui son premier plan périodisé."
+            action={<Link href="/eleves"><Button variant="secondary">Voir mes élèves</Button></Link>}
+          />
+        </Card>
       ) : (
         <Card>
           {programs.map((p) => (

@@ -1,4 +1,6 @@
-import { Card, Badge, KpiTile } from "@/components/ui";
+import Link from "next/link";
+import { Euro, Receipt } from "lucide-react";
+import { Card, Badge, Button, KpiTile, EmptyState } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getRevenue } from "@/lib/queries";
 
@@ -22,7 +24,14 @@ export default async function RevenusPage() {
       </div>
 
       <Card className="max-w-2xl mb-5">
-        {r.rows.length === 0 && <div className="px-4 py-6 text-sm text-muted">Aucun abonnement.</div>}
+        {r.rows.length === 0 && (
+          <EmptyState
+            icon={Euro}
+            title="Aucun abonnement pour l'instant"
+            description="Connecte Stripe et fixe ton tarif dans Paramètres pour pouvoir encaisser tes élèves."
+            action={<Link href="/parametres"><Button variant="secondary">Aller dans Paramètres</Button></Link>}
+          />
+        )}
         {r.rows.map((row, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-line last:border-0">
             <span className="font-display text-sm font-semibold uppercase tracking-wide flex-1">{row.name}</span>
@@ -33,7 +42,9 @@ export default async function RevenusPage() {
 
       <h2 className="font-display text-sm font-semibold uppercase tracking-wide mb-2.5 text-muted">Paiements récents</h2>
       <Card className="max-w-2xl">
-        {r.recentPayments.length === 0 && <div className="px-4 py-6 text-sm text-muted">Aucun paiement encaissé.</div>}
+        {r.recentPayments.length === 0 && (
+          <EmptyState icon={Receipt} title="Aucun paiement encaissé" description="Les paiements de tes élèves apparaîtront ici, avec le montant net après commission." />
+        )}
         {r.recentPayments.map((p, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-line last:border-0">
             <span className="font-mono text-[10px] text-ghost w-12">{p.date}</span>

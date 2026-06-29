@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { MessageSquare } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { Avatar, Button, Input } from "@/components/ui";
+import { Avatar, Button, Input, EmptyState } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getConversations, getThread } from "@/lib/queries";
 import { sendMessage } from "./actions";
@@ -18,7 +19,7 @@ export default async function MessageriePage({ searchParams }: { searchParams: {
       <aside className="w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r border-line flex flex-col">
         <div className="px-4 py-3 md:py-4 border-b border-line"><h1 className="font-display text-lg font-semibold uppercase tracking-wide">Messagerie</h1></div>
         <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
-          {convos.length === 0 && <div className="px-4 py-5 text-sm text-muted">Aucun élève.</div>}
+          {convos.length === 0 && <div className="px-4 py-5 text-xs text-muted">Aucun élève à contacter pour l&apos;instant.</div>}
           {convos.map((c) => (
             <Link key={c.id} href={`/messagerie?s=${c.id}`} className={cn("flex items-center gap-3 px-4 py-3 border-b border-line transition shrink-0 w-52 md:w-auto", c.id === selected ? "bg-surf" : "hover:bg-hover")}>
               <Avatar initials={c.initials} className="w-9 h-9" />
@@ -51,7 +52,7 @@ export default async function MessageriePage({ searchParams }: { searchParams: {
             </form>
           </>
         ) : (
-          <div className="m-auto text-sm text-muted">Sélectionne une conversation.</div>
+          <EmptyState icon={MessageSquare} title="Aucune conversation" description="Invite des élèves pour pouvoir échanger avec eux ici." className="m-auto" />
         )}
       </div>
     </div>

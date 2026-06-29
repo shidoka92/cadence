@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC = ["/login", "/showcase", "/auth", "/invite", "/payer"];
+const PUBLIC = ["/login", "/inscription", "/showcase", "/auth", "/invite", "/payer"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -27,14 +27,14 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC.some((p) => path.startsWith(p));
+  const isPublic = path === "/" || PUBLIC.some((p) => path.startsWith(p));
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
-  if (user && path.startsWith("/login")) {
+  if (user && (path.startsWith("/login") || path.startsWith("/inscription"))) {
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
     const url = request.nextUrl.clone();
     url.pathname = profile?.role === "student" ? "/eleve/accueil" : "/dashboard";

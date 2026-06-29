@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Card, Avatar, HealthScore, Button } from "@/components/ui";
+import { Users } from "lucide-react";
+import { Card, Avatar, HealthScore, Button, EmptyState } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getRoster } from "@/lib/queries";
 
@@ -15,7 +16,14 @@ export default async function ElevesPage() {
         <Link href="/eleves/inviter" className="ml-auto"><Button>+ Inviter un élève</Button></Link>
       </div>
       {roster.length === 0 ? (
-        <Card className="p-8 text-center text-sm text-muted">Aucun élève pour l&apos;instant. Génère un lien d&apos;invitation.</Card>
+        <Card>
+          <EmptyState
+            icon={Users}
+            title="Pas encore d'élève"
+            description="Génère un lien d'invitation pour relier ton premier élève — il crée son compte et apparaît ici automatiquement."
+            action={<Link href="/eleves/inviter"><Button>+ Inviter un élève</Button></Link>}
+          />
+        </Card>
       ) : (
         <Card>
           {roster.map((e) => (
