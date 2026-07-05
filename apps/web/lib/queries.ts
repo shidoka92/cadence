@@ -348,6 +348,62 @@ export async function getStudentJournal(supabase: SupabaseClient, studentId: str
   }));
 }
 
+/* ---------- Progrès élève ---------- */
+const WEEK_MS = 7 * 864e5;
+
+export async function getStudentProgress(supabase: SupabaseClient, studentId: string) {
+  const { data = [] } = await supabase
+    .from("journal_entries")
+    .select("exercise, exercise_id, load, created_at")
+    .eq("student_id", studentId)
+    .order("created_at", { ascending: true })
+    .limit(500);
+  const entries = data ?? [];
+
+  // régularité : semaines consécutives avec au moins une entrée, en remontant depuis aujourd'hui
+  const activeWeeks = new Set(entries.map((e: any) => Math.floor((Date.now() - new Date(e.created_at).getTime()) / WEEK_MS)));
+  let streak = 0;
+  while (activeWeeks.has(streak)) streak++;
+
+  const monthCount = entries.filter((e: any) => Date.now() - new Date(e.created_at).getTime() <= 30 * 864e5).length;
+
+  // groupement par exercice — id du plan si présent (mode séance), sinon nom normalisé
+  const groups = new Map<string, { name: string; points: { load: number; date: string }[] }>();
+  for (const e of entries as any[]) {
+    if (e.load == null) continue;
+    const key = e.exercise_id ?? e.exercise.trim().toLowerCase();
+    if (!groups.has(key)) groups.set(key, { name: e.exercise, points: [] });
+    const g = groups.get(key)!;
+    g.name = e.exercise; // dernier libellé rencontré
+    g.points.push({ load: Number(e.load), date: e.created_at });
+  }
+
+  const prs = [...groups.values()]
+    .map((g) => {
+      const best = g.points.reduce((a, b) => (b.load >= a.load ? b : a));
+      return { name: g.name, load: best.load, date: new Date(best.date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }) };
+    })
+    .sort((a, b) => b.load - a.load);
+
+  const charts = [...groups.values()]
+    .filter((g) => g.points.length >= 2)
+    .sort((a, b) => b.points.length - a.points.length)
+    .slice(0, 4)
+    .map((g) => {
+      const loads = g.points.map((p) => p.load);
+      const min = Math.min(...loads), max = Math.max(...loads);
+      return {
+        name: g.name,
+        data: loads,
+        labels: g.points.map((p) => new Date(p.date).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })),
+        yMin: min,
+        yMax: max === min ? min + 1 : max,
+      };
+    });
+
+  return { hasEntries: entries.length > 0, streak, monthCount, prs, charts };
+}
+
 /* ---------- Notifications ---------- */
 export async function getNotifications(supabase: SupabaseClient, userId: string) {
   const [{ data = [] }, { count }] = await Promise.all([

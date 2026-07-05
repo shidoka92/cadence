@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Dumbbell, FileText, NotebookPen, CalendarRange, MessageSquare, Settings, LogOut, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { LayoutGrid, Dumbbell, FileText, NotebookPen, TrendingUp, CalendarRange, MessageSquare, Settings, LogOut, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui";
 import { useSidebarCollapse } from "@/lib/use-sidebar-collapse";
@@ -13,6 +13,7 @@ const items = [
   { href: "/eleve/seance", label: "Ma séance", icon: Dumbbell },
   { href: "/eleve/programme", label: "Mon programme", icon: FileText },
   { href: "/eleve/journal", label: "Journal", icon: NotebookPen },
+  { href: "/eleve/progres", label: "Mes progrès", icon: TrendingUp },
   { href: "/eleve/planning", label: "Planning", icon: CalendarRange },
   { href: "/eleve/messagerie", label: "Messagerie", icon: MessageSquare },
   { href: "/eleve/parametres", label: "Paramètres", icon: Settings },
