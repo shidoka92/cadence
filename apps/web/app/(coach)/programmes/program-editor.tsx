@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 import { Button, Badge, Card, CardHeader, CardTitle, Input } from "@/components/ui";
 import type { Plan } from "@cadence/types";
 import { flattenPlanRefs, encodeRef } from "@/lib/plan";
-import { savePlan, addCoachAnnotation } from "./actions";
+import { savePlan, saveAsTemplate, addCoachAnnotation } from "./actions";
 
 type Annotation = { id: string; author: "coach" | "student"; body: string; time: string; anchorLabel: string | null };
 
@@ -31,6 +31,7 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tplState, setTplState] = useState<"idle" | "saving" | "saved">("idle");
 
   const bloc = plan.blocks[bi];
   const session = bloc?.sessions[si];
@@ -72,6 +73,14 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
     if (r.ok) setDirty(false); else setError(r.error);
   }
 
+  async function onSaveTemplate() {
+    setTplState("saving"); setError(null);
+    const r = await saveAsTemplate(title, plan);
+    if (!r.ok) { setTplState("idle"); setError(r.error); return; }
+    setTplState("saved");
+    setTimeout(() => setTplState("idle"), 2000);
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
       <header className="flex items-center gap-4 px-4 md:px-7 py-4 border-b border-line">
@@ -86,6 +95,9 @@ export function ProgramEditor({ programId, title: initialTitle, student, initial
         </div>
         <div className="ml-auto flex items-center gap-2.5 shrink-0">
           {error && <span role="alert" className="text-xs text-risk">{error}</span>}
+          <Button variant="secondary" onClick={onSaveTemplate} disabled={tplState === "saving"}>
+            {tplState === "saved" ? "Modèle enregistré ✓" : tplState === "saving" ? "Enregistrement…" : "Enregistrer comme modèle"}
+          </Button>
           <Button onClick={onSave} disabled={!dirty || saving}>{saving ? "Enregistrement…" : dirty ? "Enregistrer" : "Enregistré ✓"}</Button>
         </div>
       </header>

@@ -19,11 +19,10 @@ export default async function FicheElevePage({ params }: { params: { id: string 
   if (!s) notFound();
 
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: coach } = await supabase
-    .from("profiles")
-    .select("stripe_charges_enabled, subscription_price")
-    .eq("id", user!.id)
-    .single();
+  const [{ data: coach }, { data: templates = [] }] = await Promise.all([
+    supabase.from("profiles").select("stripe_charges_enabled, subscription_price").eq("id", user!.id).single(),
+    supabase.from("program_templates").select("id, title").order("created_at", { ascending: false }),
+  ]);
   const paymentReady = Boolean(coach?.stripe_charges_enabled && coach?.subscription_price);
 
   return (
@@ -42,8 +41,14 @@ export default async function FicheElevePage({ params }: { params: { id: string 
         </div>
         <div className="ml-auto flex flex-wrap gap-2.5">
           <Link href={`/messagerie?s=${params.id}`}><Button variant="secondary">Message</Button></Link>
-          <form action={createProgram}>
+          <form action={createProgram} className="flex flex-wrap items-center gap-2.5">
             <input type="hidden" name="studentId" value={params.id} />
+            {(templates ?? []).length > 0 && (
+              <select name="templateId" defaultValue="" aria-label="Modèle de programme" className="bg-surf2 border border-line2 rounded-md px-3 py-2.5 text-xs text-muted outline-none focus:border-acid/60">
+                <option value="">Programme vierge</option>
+                {(templates ?? []).map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
+              </select>
+            )}
             <Button type="submit">{s.program ? "Nouveau programme" : "Assigner un programme"}</Button>
           </form>
         </div>

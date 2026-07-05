@@ -28,6 +28,22 @@ export function decodeAnchor(raw: string): PlanAnchor {
   return { sessionId, exerciseId: exerciseId || undefined };
 }
 
+/** Copie d'un Plan avec des ids régénérés — pour instancier un modèle sans partager les ancres d'annotations. */
+export function reIdPlan(plan: Plan): Plan {
+  const uid = () => Math.random().toString(36).slice(2, 10);
+  return {
+    blocks: plan.blocks.map((b) => ({
+      ...b,
+      id: uid(),
+      sessions: b.sessions.map((s) => ({
+        ...s,
+        id: uid(),
+        exercises: s.exercises.map((e) => ({ ...e, id: uid(), cells: e.cells.map((c) => ({ ...c })) })),
+      })),
+    })),
+  };
+}
+
 export function resolveAnchorLabel(plan: Plan, anchor: PlanAnchor): string | null {
   if (!anchor?.sessionId) return null;
   const refs = flattenPlanRefs(plan);
