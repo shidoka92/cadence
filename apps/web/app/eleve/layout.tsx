@@ -10,15 +10,24 @@ export default async function EleveLayout({ children }: { children: React.ReactN
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Colonnes garanties uniquement : la porte de rôle ne doit jamais casser sur une colonne
+  // absente (sinon profile=null → redirection en boucle avec le layout coach = crash).
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role, coach_id, stripe_customer_id")
+    .select("full_name, role, coach_id")
     .eq("id", user.id)
     .single();
-  if (profile?.role !== "student") redirect("/dashboard");
+  if (profile && profile.role !== "student") redirect("/dashboard");
+
+  // Lecture défensive du client Stripe : dégrade en null si la colonne n'existe pas encore.
+  const { data: billing } = await supabase
+    .from("profiles")
+    .select("stripe_customer_id")
+    .eq("id", user.id)
+    .single();
 
   const [{ data: coach }, { data: sub }, notifications] = await Promise.all([
-    profile.coach_id
+    profile?.coach_id
       ? supabase.from("profiles").select("full_name").eq("id", profile.coach_id).single()
       : Promise.resolve({ data: null }),
     supabase.from("subscriptions").select("status").eq("student_id", user.id).maybeSingle(),
@@ -34,7 +43,7 @@ export default async function EleveLayout({ children }: { children: React.ReactN
           <div className="flex items-center flex-wrap gap-3 px-4 md:px-7 py-2.5 bg-risk/15 border-b border-risk/40">
             <AlertTriangle size={15} className="text-risk shrink-0" />
             <p className="text-xs text-text">Ton dernier paiement a échoué — ton abonnement est en pause.</p>
-            {profile.stripe_customer_id && (
+            {billing?.stripe_customer_id && (
               <form action={openBillingPortal} className="ml-auto">
                 <button type="submit" className="font-display text-[11px] font-semibold uppercase tracking-wide text-risk hover:underline">
                   Mettre à jour mon paiement →
