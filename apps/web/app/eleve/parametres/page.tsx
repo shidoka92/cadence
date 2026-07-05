@@ -1,11 +1,11 @@
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Input } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
-import { updateProfile, cancelSubscription } from "./actions";
+import { updateProfile, cancelSubscription, openBillingPortal } from "./actions";
 
 export default async function EleveParametresPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user!.id).single();
+  const { data: profile } = await supabase.from("profiles").select("full_name, stripe_customer_id").eq("id", user!.id).single();
   const { data: sub } = await supabase.from("subscriptions").select("status").eq("student_id", user!.id).maybeSingle();
 
   const active = sub?.status === "active";
@@ -43,9 +43,16 @@ export default async function EleveParametresPage() {
                 {active ? "Ton abonnement est actif — tu peux l'annuler à tout moment." : pastDue ? "Ton dernier paiement a échoué — vérifie ton moyen de paiement." : "Ton abonnement n'est plus actif."}
               </p>
               {(active || pastDue) && (
-                <form action={cancelSubscription}>
-                  <Button type="submit" variant="secondary">Annuler mon abonnement</Button>
-                </form>
+                <div className="flex flex-wrap gap-2.5">
+                  {profile?.stripe_customer_id && (
+                    <form action={openBillingPortal}>
+                      <Button type="submit">{pastDue ? "Mettre à jour mon paiement" : "Gérer mon moyen de paiement"}</Button>
+                    </form>
+                  )}
+                  <form action={cancelSubscription}>
+                    <Button type="submit" variant="secondary">Annuler mon abonnement</Button>
+                  </form>
+                </div>
               )}
             </>
           )}

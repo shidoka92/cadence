@@ -44,6 +44,11 @@ export async function POST(req: NextRequest) {
       const coachId = session.metadata?.coachId;
       if (session.mode === "subscription" && session.subscription && studentId && coachId) {
         await upsertSubscription(studentId, coachId, String(session.subscription), "active");
+        const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
+        if (customerId) {
+          const admin = createAdminClient();
+          await admin.from("profiles").update({ stripe_customer_id: customerId }).eq("id", studentId);
+        }
       } else if (session.mode === "payment" && session.metadata?.classId && studentId && coachId) {
         const classId = session.metadata.classId;
         const admin = createAdminClient();
