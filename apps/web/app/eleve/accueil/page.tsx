@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, Badge, HealthScore } from "@/components/ui";
+import { Card, CardHeader, CardTitle, Badge, Button, HealthScore } from "@/components/ui";
 import { HealthBreakdown } from "@/components/coach/health-breakdown";
 import { createClient } from "@/lib/supabase/server";
 import { getStudentHome } from "@/lib/queries";
@@ -18,6 +18,7 @@ export default async function EleveAccueilPage() {
       <header className="flex items-center flex-wrap gap-3 gap-y-2 px-4 md:px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Salut, <span className="text-acid">{firstName}</span></h1>
         <span className="font-mono text-xs text-muted ml-auto">{today}</span>
+        {h.program && <Link href="/eleve/seance"><Button>Démarrer ma séance</Button></Link>}
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 md:px-7 py-6 space-y-4">

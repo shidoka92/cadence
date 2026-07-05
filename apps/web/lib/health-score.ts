@@ -19,7 +19,7 @@ export async function computeAndStoreHealthScore(supabase: SupabaseClient, stude
 
   const [progRes, journalRes, msgRes] = await Promise.all([
     supabase.from("programs").select("plan").eq("student_id", studentId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-    supabase.from("journal_entries").select("exercise, load, created_at").eq("student_id", studentId).gte("created_at", since).order("created_at", { ascending: true }),
+    supabase.from("journal_entries").select("exercise, exercise_id, load, created_at").eq("student_id", studentId).gte("created_at", since).order("created_at", { ascending: true }),
     supabase.from("messages").select("sender, created_at").eq("student_id", studentId).gte("created_at", since).order("created_at", { ascending: true }),
   ]);
 
@@ -73,11 +73,12 @@ function computeResponsiveness(messages: { sender: string; created_at: string }[
   return Math.round(Math.max(0, Math.min(100, 100 - avg * 2)));
 }
 
-function computeProgression(entries: { exercise: string; load: number | null; created_at: string }[]) {
+function computeProgression(entries: { exercise: string; exercise_id?: string | null; load: number | null; created_at: string }[]) {
   const byExercise = new Map<string, { load: number; created_at: string }[]>();
   for (const e of entries) {
     if (e.load == null) continue;
-    const key = e.exercise.trim().toLowerCase();
+    // l'id du plan est fiable (mode séance) ; le nom en texte libre est le fallback historique
+    const key = e.exercise_id ?? e.exercise.trim().toLowerCase();
     if (!byExercise.has(key)) byExercise.set(key, []);
     byExercise.get(key)!.push({ load: e.load, created_at: e.created_at });
   }

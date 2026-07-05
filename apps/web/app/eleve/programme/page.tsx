@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardHeader, CardTitle, Badge, Button, Input } from "@/components/ui";
 import { ProgramViewer } from "@/components/student/program-viewer";
 import { createClient } from "@/lib/supabase/server";
@@ -12,8 +13,9 @@ export default async function EleveProgrammePage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
-      <header className="px-4 md:px-7 py-4 border-b border-line">
+      <header className="flex items-center flex-wrap gap-3 gap-y-2 px-4 md:px-7 py-4 border-b border-line">
         <h1 className="font-display text-2xl font-semibold uppercase tracking-wide">Mon programme</h1>
+        {program && <Link href="/eleve/seance" className="ml-auto"><Button>Démarrer ma séance</Button></Link>}
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 md:px-7 py-6 space-y-5">

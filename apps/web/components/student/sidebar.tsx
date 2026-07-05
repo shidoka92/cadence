@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, FileText, NotebookPen, CalendarRange, MessageSquare, Settings, LogOut, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { LayoutGrid, Dumbbell, FileText, NotebookPen, CalendarRange, MessageSquare, Settings, LogOut, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui";
 import { useSidebarCollapse } from "@/lib/use-sidebar-collapse";
@@ -10,6 +10,7 @@ import { NotificationBell, type NotificationItem } from "@/components/shared/not
 
 const items = [
   { href: "/eleve/accueil", label: "Accueil", icon: LayoutGrid },
+  { href: "/eleve/seance", label: "Ma séance", icon: Dumbbell },
   { href: "/eleve/programme", label: "Mon programme", icon: FileText },
   { href: "/eleve/journal", label: "Journal", icon: NotebookPen },
   { href: "/eleve/planning", label: "Planning", icon: CalendarRange },
