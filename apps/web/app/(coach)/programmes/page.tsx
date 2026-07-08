@@ -4,18 +4,23 @@ import { Card, Badge, Button, EmptyState } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getPrograms } from "@/lib/queries";
 import { deleteTemplate } from "./actions";
+import { AiGenerator } from "./ai-generator";
 
 export default async function ProgrammesPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const [programs, { data: templates = [] }] = await Promise.all([
+  const [programs, { data: templates = [] }, { data: students = [] }] = await Promise.all([
     getPrograms(supabase, user!.id),
     supabase.from("program_templates").select("id, title, plan").order("created_at", { ascending: false }),
+    supabase.from("profiles").select("id, full_name").eq("coach_id", user!.id).eq("role", "student").order("full_name"),
   ]);
+  const studentOptions = (students ?? []).map((s) => ({ id: s.id as string, name: s.full_name as string }));
 
   return (
     <div className="px-4 md:px-7 py-6">
       <h1 className="font-display text-2xl font-semibold uppercase tracking-wide mb-5">Programmes</h1>
+
+      <AiGenerator students={studentOptions} />
       {programs.length === 0 ? (
         <Card>
           <EmptyState
