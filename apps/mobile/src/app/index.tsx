@@ -40,10 +40,16 @@ export default function Accueil() {
 
         <View className="mt-8 gap-3">
           <Pressable
-            onPress={() => router.push("/programme")}
+            onPress={() => router.push("/seance")}
             className="bg-acid rounded-md px-4 py-3.5 items-center active:opacity-80"
           >
-            <Text className="text-onAcid font-bold">Voir mon programme</Text>
+            <Text className="text-onAcid font-bold">Démarrer une séance</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/programme")}
+            className="bg-surf border border-line rounded-md px-4 py-3.5 items-center active:bg-hover"
+          >
+            <Text className="text-text font-semibold">Voir mon programme</Text>
           </Pressable>
           <Pressable
             onPress={() => supabase.auth.signOut()}
