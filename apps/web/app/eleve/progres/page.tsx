@@ -2,13 +2,23 @@ import Link from "next/link";
 import { TrendingUp, Trophy } from "lucide-react";
 import { Card, CardHeader, CardTitle, Button, KpiTile, EmptyState } from "@/components/ui";
 import { EvolutionChart } from "@/components/coach/evolution-chart";
+import { PrCelebration } from "@/components/eleve/pr-celebration";
+import { BadgeGrid } from "@/components/eleve/badge-grid";
+import { LeaderboardCard } from "@/components/eleve/leaderboard-card";
 import { createClient } from "@/lib/supabase/server";
-import { getStudentProgress } from "@/lib/queries";
+import { getStudentProgress, getClassLeaderboard } from "@/lib/queries";
+import { computeBadges, unlockedCount } from "@/lib/momentum";
 
 export default async function EleveProgresPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const p = await getStudentProgress(supabase, user!.id);
+  const [p, leaderboard] = await Promise.all([
+    getStudentProgress(supabase, user!.id),
+    getClassLeaderboard(supabase),
+  ]);
+
+  const badges = computeBadges({ totalSessions: p.totalSessions, streakWeeks: p.streak, prCount: p.prs.length });
+  const volumeTonnes = (p.totalVolume / 1000).toFixed(1);
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
@@ -26,11 +36,18 @@ export default async function EleveProgresPage() {
           />
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 max-w-2xl">
+            {p.recentPr && <PrCelebration pr={p.recentPr} />}
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 max-w-2xl">
               <KpiTile label="Semaines actives d'affilée" value={String(p.streak)} accent />
-              <KpiTile label="Exos logués (30 j)" value={String(p.monthCount)} />
+              <KpiTile label="Séances loguées" value={String(p.totalSessions)} />
               <KpiTile label="Records personnels" value={String(p.prs.length)} />
+              <KpiTile label="Volume total (t)" value={volumeTonnes} />
             </div>
+
+            <BadgeGrid badges={badges} unlocked={unlockedCount(badges)} />
+
+            {leaderboard.length > 1 && <LeaderboardCard rows={leaderboard} />}
 
             {p.prs.length > 0 && (
               <Card className="max-w-2xl">

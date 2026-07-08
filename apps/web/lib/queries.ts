@@ -354,7 +354,7 @@ const WEEK_MS = 7 * 864e5;
 export async function getStudentProgress(supabase: SupabaseClient, studentId: string) {
   const { data = [] } = await supabase
     .from("journal_entries")
-    .select("exercise, exercise_id, load, created_at")
+    .select("exercise, exercise_id, load, reps, session_ref, created_at")
     .eq("student_id", studentId)
     .order("created_at", { ascending: true })
     .limit(500);
@@ -366,6 +366,10 @@ export async function getStudentProgress(supabase: SupabaseClient, studentId: st
   while (activeWeeks.has(streak)) streak++;
 
   const monthCount = entries.filter((e: any) => Date.now() - new Date(e.created_at).getTime() <= 30 * 864e5).length;
+
+  // séances loguées (session_ref distincts) et volume total soulevé (kg × reps)
+  const totalSessions = new Set(entries.map((e: any) => e.session_ref).filter(Boolean)).size;
+  const totalVolume = entries.reduce((sum: number, e: any) => sum + (e.load != null && e.reps != null ? Number(e.load) * Number(e.reps) : 0), 0);
 
   // groupement par exercice — id du plan si présent (mode séance), sinon nom normalisé
   const groups = new Map<string, { name: string; points: { load: number; date: string }[] }>();
@@ -401,7 +405,49 @@ export async function getStudentProgress(supabase: SupabaseClient, studentId: st
       };
     });
 
-  return { hasEntries: entries.length > 0, streak, monthCount, prs, charts };
+  // record récent : charge de pointe battue dans les 14 derniers jours (le pic est plus récent que tous les précédents)
+  const RECENT_PR_MS = 14 * 864e5;
+  let recentPr: { name: string; load: number; date: string } | null = null;
+  let recentPrTime = 0;
+  for (const g of groups.values()) {
+    if (g.points.length < 2) continue;
+    const sorted = [...g.points].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const last = sorted[sorted.length - 1];
+    const prevBest = Math.max(...sorted.slice(0, -1).map((p) => p.load));
+    const t = new Date(last.date).getTime();
+    if (last.load > prevBest && Date.now() - t <= RECENT_PR_MS && t > recentPrTime) {
+      recentPrTime = t;
+      recentPr = { name: g.name, load: last.load, date: new Date(last.date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }) };
+    }
+  }
+
+  return { hasEntries: entries.length > 0, streak, monthCount, totalSessions, totalVolume, prs, charts, recentPr };
+}
+
+/* ---------- Momentum : classement de classe ---------- */
+export interface LeaderboardRow {
+  studentId: string;
+  name: string;
+  sessions: number;
+  position: number;
+  isMe: boolean;
+}
+
+/**
+ * Classement des élèves d'une même classe par séances loguées sur 30 j.
+ * Renvoie [] si la fonction `class_leaderboard` n'est pas encore déployée
+ * (migration 0010) ou si l'élève n'est dans aucune classe.
+ */
+export async function getClassLeaderboard(supabase: SupabaseClient): Promise<LeaderboardRow[]> {
+  const { data, error } = await supabase.rpc("class_leaderboard");
+  if (error || !data) return [];
+  return (data as any[]).map((r) => ({
+    studentId: r.student_id,
+    name: r.display_name,
+    sessions: r.sessions,
+    position: r.place,
+    isMe: r.is_me,
+  }));
 }
 
 /* ---------- Notifications ---------- */
