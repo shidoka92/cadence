@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../lib/supabase";
-import { useSession } from "../lib/use-session";
+import { supabase } from "../../lib/supabase";
+import { useSession } from "../../lib/use-session";
 
 export default function Accueil() {
   const { session, loading } = useSession();
@@ -35,25 +35,19 @@ export default function Accueil() {
         <Text className="text-acid text-xs uppercase tracking-[3px]">Cadence</Text>
         <Text className="text-text text-3xl font-bold">Salut {name ?? "!"}</Text>
         <Text className="text-muted text-base leading-6">
-          Ton espace élève arrive bientôt. Le squelette mobile est en ligne : design Arena, session Supabase et navigation prêts.
+          Prêt à t&apos;entraîner ? Lance ta séance guidée, ou retrouve ton programme et tes progrès dans les onglets.
         </Text>
 
         <View className="mt-8 gap-3">
           <Pressable
             onPress={() => router.push("/seance")}
-            className="bg-acid rounded-md px-4 py-3.5 items-center active:opacity-80"
+            className="bg-acid rounded-md px-4 py-4 items-center active:opacity-80"
           >
-            <Text className="text-onAcid font-bold">Démarrer une séance</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/programme")}
-            className="bg-surf border border-line rounded-md px-4 py-3.5 items-center active:bg-hover"
-          >
-            <Text className="text-text font-semibold">Voir mon programme</Text>
+            <Text className="text-onAcid font-bold text-base">Démarrer une séance</Text>
           </Pressable>
           <Pressable
             onPress={() => supabase.auth.signOut()}
-            className="self-start bg-surf border border-line rounded-md px-4 py-2.5 active:bg-hover"
+            className="self-start bg-surf border border-line rounded-md px-4 py-2.5 mt-2 active:bg-hover"
           >
             <Text className="text-text text-sm">Se déconnecter</Text>
           </Pressable>

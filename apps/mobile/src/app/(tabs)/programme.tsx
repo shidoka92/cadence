@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
-import { Redirect, useRouter } from "expo-router";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { Redirect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { Plan } from "@cadence/types";
-import { supabase } from "../lib/supabase";
-import { useSession } from "../lib/use-session";
+import { supabase } from "../../lib/supabase";
+import { useSession } from "../../lib/use-session";
 
 type Program = { title: string; status: string; plan: Plan };
 
 export default function Programme() {
   const { session, loading } = useSession();
-  const router = useRouter();
   const [fetching, setFetching] = useState(true);
   const [program, setProgram] = useState<Program | null>(null);
 
@@ -40,10 +39,7 @@ export default function Programme() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg">
-      <View className="flex-row items-center gap-3 px-4 py-3 border-b border-line">
-        <Pressable onPress={() => router.back()} hitSlop={10} className="w-8 h-8 items-center justify-center rounded-md active:bg-hover">
-          <Text className="text-text text-xl">‹</Text>
-        </Pressable>
+      <View className="px-4 py-3 border-b border-line">
         <Text className="text-text text-lg font-bold uppercase tracking-[2px]">Mon programme</Text>
       </View>
 

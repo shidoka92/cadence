@@ -12,7 +12,11 @@ export default function RootLayout() {
           headerShown: false,
           contentStyle: { backgroundColor: "#0C0E11" },
         }}
-      />
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="seance" options={{ presentation: "card" }} />
+      </Stack>
     </SafeAreaProvider>
   );
 }
