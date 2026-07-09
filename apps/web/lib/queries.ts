@@ -144,6 +144,34 @@ export async function getStudentDetail(supabase: SupabaseClient, studentId: stri
   };
 }
 
+/** Signal — readiness déclarée par l'élève (feature #3). null si la table n'est pas
+ *  déployée (migration 0011) ou si l'élève n'a pas encore fait de check-in. */
+export async function getStudentReadiness(supabase: SupabaseClient, studentId: string) {
+  const { data, error } = await supabase
+    .from("readiness_checkins")
+    .select("date, sleep_hours, sleep_quality, energy, soreness, mood, score")
+    .eq("student_id", studentId)
+    .order("date", { ascending: false })
+    .limit(14);
+  if (error || !data || data.length === 0) return null;
+  const rows = data as any[];
+  const latest = rows[0];
+  const trend = [...rows].reverse(); // ancien → récent pour le graphe
+  return {
+    latest: {
+      date: new Date(latest.date).toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short" }),
+      score: latest.score as number,
+      sleepHours: latest.sleep_hours as number | null,
+      sleepQuality: latest.sleep_quality as number | null,
+      energy: latest.energy as number | null,
+      soreness: latest.soreness as number | null,
+      mood: latest.mood as number | null,
+    },
+    scores: trend.map((r) => r.score as number),
+    labels: trend.map((r) => `${String(r.date).slice(8, 10)}/${String(r.date).slice(5, 7)}`),
+  };
+}
+
 /** Évolution dérivée du Plan : la charge d'un même exercice (ex. développé couché) à travers les blocs. */
 function planEvolution(plan: Plan | undefined) {
   if (!plan) return null;

@@ -5,17 +5,25 @@ import { HealthBreakdown } from "@/components/coach/health-breakdown";
 import { EvolutionChart } from "@/components/coach/evolution-chart";
 import { CopyLink } from "@/components/coach/copy-link";
 import { createClient } from "@/lib/supabase/server";
-import { getStudentDetail } from "@/lib/queries";
+import { getStudentDetail, getStudentReadiness } from "@/lib/queries";
 import { computeAndStoreHealthScore } from "@/lib/health-score";
 import { createProgram } from "@/app/(coach)/programmes/actions";
 import { baseUrl } from "@/lib/url";
 
 function tone(score: number) { return score >= 70 ? "text-ok" : score >= 50 ? "text-warn" : "text-risk"; }
+function readinessVerdict(score: number) {
+  if (score >= 75) return { label: "Feu vert", tone: "text-ok" };
+  if (score >= 50) return { label: "Correct", tone: "text-warn" };
+  return { label: "Fatigue", tone: "text-risk" };
+}
 
 export default async function FicheElevePage({ params }: { params: { id: string } }) {
   const supabase = createClient();
   await computeAndStoreHealthScore(supabase, params.id);
-  const s = await getStudentDetail(supabase, params.id);
+  const [s, readiness] = await Promise.all([
+    getStudentDetail(supabase, params.id),
+    getStudentReadiness(supabase, params.id),
+  ]);
   if (!s) notFound();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -81,6 +89,40 @@ export default async function FicheElevePage({ params }: { params: { id: string 
             </div>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Signal — Forme déclarée</CardTitle>
+            {readiness && <span className="font-mono text-[9px] text-ghost ml-auto tracking-wider">{readiness.latest.date.toUpperCase()}</span>}
+          </CardHeader>
+          {readiness ? (
+            <div className="grid md:grid-cols-[0.7fr_1.3fr] gap-4 p-4">
+              <div>
+                <div className="flex items-end gap-3">
+                  <div className={`font-display text-6xl font-bold leading-none ${readinessVerdict(readiness.latest.score).tone}`}>{readiness.latest.score}</div>
+                  <div className={`font-display text-sm font-semibold uppercase mb-1 ${readinessVerdict(readiness.latest.score).tone}`}>{readinessVerdict(readiness.latest.score).label}</div>
+                </div>
+                <div className="font-mono text-[11px] text-muted mt-3 space-y-0.5">
+                  {readiness.latest.sleepHours != null && <div>Sommeil · {readiness.latest.sleepHours} h</div>}
+                  {readiness.latest.sleepQuality != null && <div>Qualité sommeil · {readiness.latest.sleepQuality}/5</div>}
+                  {readiness.latest.energy != null && <div>Énergie · {readiness.latest.energy}/5</div>}
+                  {readiness.latest.soreness != null && <div>Courbatures · {readiness.latest.soreness}/5</div>}
+                  {readiness.latest.mood != null && <div>Humeur · {readiness.latest.mood}/5</div>}
+                </div>
+              </div>
+              <div>
+                {readiness.scores.length >= 2 ? (
+                  <EvolutionChart data={readiness.scores} labels={readiness.labels} yMin={0} yMax={100} />
+                ) : (
+                  <p className="text-sm text-muted">Un seul check-in pour l&apos;instant — la tendance s&apos;affichera dès le deuxième jour.</p>
+                )}
+                <p className="text-[11px] text-muted mt-2">Readiness auto-déclarée par l&apos;élève (0-100). En dessous de 50, envisage d&apos;alléger la charge.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4"><p className="text-sm text-muted">{s.name} n&apos;a pas encore déclaré sa forme dans l&apos;app mobile.</p></div>
+          )}
+        </Card>
 
         <div className="grid lg:grid-cols-2 gap-4">
           <Card>
