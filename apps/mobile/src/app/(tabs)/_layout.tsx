@@ -50,6 +50,20 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused }) => <TabIcon icon="📈" focused={focused} />,
         }}
       />
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: "Messages",
+          tabBarIcon: ({ focused }) => <TabIcon icon="💬" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profil"
+        options={{
+          title: "Profil",
+          tabBarIcon: ({ focused }) => <TabIcon icon="⚙" focused={focused} />,
+        }}
+      />
     </Tabs>
   );
 }
