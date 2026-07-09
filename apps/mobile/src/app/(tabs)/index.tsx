@@ -5,23 +5,22 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
 import { useSession } from "../../lib/use-session";
 import { getStudentHome, type StudentHome } from "../../lib/home";
+import { getTodayCheckin, readinessVerdict } from "../../lib/readiness";
 
-function healthColor(score: number): string {
-  if (score >= 75) return "text-ok";
-  if (score >= 50) return "text-warn";
-  return "text-risk";
-}
+const TONE_TEXT = { ok: "text-ok", warn: "text-warn", risk: "text-risk" } as const;
 
 export default function Accueil() {
   const { session, loading } = useSession();
   const router = useRouter();
   const [fetching, setFetching] = useState(true);
   const [home, setHome] = useState<StudentHome | null>(null);
+  const [readiness, setReadiness] = useState<number | null>(null);
 
   useEffect(() => {
     if (!session) return;
-    getStudentHome(supabase, session.user.id).then((h) => {
+    Promise.all([getStudentHome(supabase, session.user.id), getTodayCheckin(supabase, session.user.id)]).then(([h, c]) => {
       setHome(h);
+      setReadiness(c?.score ?? null);
       setFetching(false);
     });
   }, [session]);
@@ -36,6 +35,7 @@ export default function Accueil() {
   if (!session) return <Redirect href="/login" />;
 
   const firstName = home?.name.split(" ")[0] ?? "!";
+  const verdict = readiness != null ? readinessVerdict(readiness) : null;
 
   return (
     <SafeAreaView className="flex-1 bg-bg">
@@ -59,14 +59,20 @@ export default function Accueil() {
             </Pressable>
 
             <View className="flex-row gap-3">
-              <View className="flex-1 rounded-md border border-line bg-surf p-4">
-                <Text className="text-ghost text-[11px] uppercase tracking-wider">Forme</Text>
-                {home?.health != null ? (
-                  <Text className={`text-3xl font-bold mt-1 ${healthColor(home.health)}`}>{home.health}</Text>
+              <Pressable
+                onPress={() => router.push("/signal")}
+                className="flex-1 rounded-md border border-line bg-surf p-4 active:bg-hover"
+              >
+                <Text className="text-ghost text-[11px] uppercase tracking-wider">Ma forme</Text>
+                {readiness != null && verdict ? (
+                  <>
+                    <Text className={`text-3xl font-bold mt-1 ${TONE_TEXT[verdict.tone]}`}>{readiness}</Text>
+                    <Text className={`text-xs ${TONE_TEXT[verdict.tone]}`}>{verdict.label}</Text>
+                  </>
                 ) : (
-                  <Text className="text-muted text-sm mt-2">Pas encore calculée</Text>
+                  <Text className="text-acid text-sm mt-2">Faire mon check-in →</Text>
                 )}
-              </View>
+              </Pressable>
               <Pressable
                 onPress={() => router.push("/planning")}
                 className="flex-1 rounded-md border border-line bg-surf p-4 active:bg-hover"

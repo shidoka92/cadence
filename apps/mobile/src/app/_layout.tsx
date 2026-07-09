@@ -18,6 +18,7 @@ export default function RootLayout() {
         <Stack.Screen name="seance" options={{ presentation: "card" }} />
         <Stack.Screen name="journal" options={{ presentation: "card" }} />
         <Stack.Screen name="planning" options={{ presentation: "card" }} />
+        <Stack.Screen name="signal" options={{ presentation: "card" }} />
       </Stack>
     </SafeAreaProvider>
   );
